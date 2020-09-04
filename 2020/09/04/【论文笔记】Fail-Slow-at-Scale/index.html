@@ -40,8 +40,18 @@
 <meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1giel7qwrmdj31hc0u0ad5.jpg">
 <meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gielf70b6xj31hc0u076s.jpg">
 <meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1giemro7jubj31hc0u0q5v.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gieo0netx2j31hc0u0gmo.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gieo6war0zj31hc0u0wgd.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gieobc211ij31hc0u075f.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gieol93knlj31hc0u0dir.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gieotkc3tmj31hc0u0q4p.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gieowksvcgj31hc0u076w.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1giep22ktcnj31hc0u0mzh.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1giep26l4tvj31hc0u0tar.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1giep28h4hjj31hc0u0ac4.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1giep2aaam7j31hc0u0763.jpg">
 <meta property="article:published_time" content="2020-09-03T16:36:58.000Z">
-<meta property="article:modified_time" content="2020-09-04T07:04:33.321Z">
+<meta property="article:modified_time" content="2020-09-04T08:47:43.211Z">
 <meta property="article:author" content="Hanlin Ke">
 <meta property="article:tag" content="paper presentations">
 <meta name="twitter:card" content="summary">
@@ -293,7 +303,7 @@
       <span class="post-meta-item-text">Posted on</span>
       
 
-      <time title="Created: 2020-09-04 00:36:58 / Modified: 15:04:33" itemprop="dateCreated datePublished" datetime="2020-09-04T00:36:58+08:00">2020-09-04</time>
+      <time title="Created: 2020-09-04 00:36:58 / Modified: 16:47:43" itemprop="dateCreated datePublished" datetime="2020-09-04T00:36:58+08:00">2020-09-04</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -340,17 +350,49 @@
 <h2 id="3-发现"><a href="#3-发现" class="headerlink" title="3 发现"></a>3 发现</h2><h3 id="3-1-根本原因"><a href="#3-1-根本原因" class="headerlink" title="3.1 根本原因"></a>3.1 根本原因</h3><p>作者们总结得到了7个产生故障的根本原因：设备error、固件bug、温度、电源、环境、配置以及不明原因（可能是工程师们忘了或者等到工程师们要解决的时候问题已经不存在了）。</p>
 <p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1giekn5amj4j31hc0u0q4j.jpg" alt="PPT-8"></p>
 <p>其中，设备error和固件bug被划分为内部原因，温度、电源、环境和配置被划分为外部原因。接下来，我将分别介绍内部原因和外部原因：</p>
-<h4 id="3-1-1-内部原因"><a href="#3-1-1-内部原因" class="headerlink" title="3.1.1 内部原因"></a>3.1.1 内部原因</h4><p>内部原因有设备error和固件bug。首先介绍固件bug造成的影响：</p>
+<h4 id="3-1-1-内部原因"><a href="#3-1-1-内部原因" class="headerlink" title="3.1.1 内部原因"></a>3.1.1 内部原因</h4><p>内部原因有设备error和固件bug。首先介绍<strong>固件bug</strong>造成的影响：</p>
 <p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1giel7qwrmdj31hc0u0ad5.jpg" alt="PPT-9"></p>
 <p>第一个例子，固态硬盘的IO速度正常情况下都是微秒级别，当固态硬盘中某个组件在设计或编码时留下了一个bug的时候，可能会导致固态硬盘的读写速度降至毫秒级别，使得数据存储、获取的速度大幅下降。</p>
 <p>第二个例子，承接第一个例子，这是三星840EVO固态硬盘在读操作时存在bug时的测试图，如上图所示，整个硬盘的读取速度出现了大幅下降。后期三星官方修复了这个bug并且反馈给消费者。</p>
-<p>接着介绍设备error造成的影响：</p>
+<p>接着介绍<strong>设备error</strong>造成的影响：</p>
 <p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gielf70b6xj31hc0u076s.jpg" alt="PPT-10"></p>
 <p>还是以一个例子来具体介绍一下设备error。固态硬盘（SSD）由接口（interface）、闪存转换层（FTL，包含坏块管理BBM、地址转换AM、垃圾回收GC、损耗均衡WL等算法）、闪存接口（NAND interface）和闪存芯片（NAND）组成。而闪存芯片是由一系列闪存颗粒（如上图绿框部分）组成。在写数据时，SSD控制器获取到写操作的命令后，需要将要写入的地址通过AM换成闪存的地址，然后将数据通过NAND interface存入相应地址。在存入时，NAND向颗粒的控制栅极与衬底输入一个固定的电压Vpp，以便读取数据时输入的电压高于Vpp返回1，低于这个阈值就返回0。</p>
 <p>例子如下：当SSD要读取闪存中的一页时，控制器会设定一个电压用来读取数据。当一个闪存芯片磨损殆尽之后，就无法通过这个电压获取到数据，SSD控制器就会用不同的电压不断尝试。不断尝试就会导致SSD的性能下降。</p>
 <p>其他的内部原因的例子如下所示：</p>
 <p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1giemro7jubj31hc0u0q5v.jpg" alt="PPT-11"></p>
-<h4 id="3-1-2-外部原因"><a href="#3-1-2-外部原因" class="headerlink" title="3.1.2 外部原因"></a>3.1.2 外部原因</h4><h3 id="3-2-故障转换"><a href="#3-2-故障转换" class="headerlink" title="3.2 故障转换"></a>3.2 故障转换</h3><h3 id="3-3-症状"><a href="#3-3-症状" class="headerlink" title="3.3 症状"></a>3.3 症状</h3><h3 id="3-4-影响"><a href="#3-4-影响" class="headerlink" title="3.4 影响"></a>3.4 影响</h3><h2 id="4-建议"><a href="#4-建议" class="headerlink" title="4 建议"></a>4 建议</h2>
+<h4 id="3-1-2-外部原因"><a href="#3-1-2-外部原因" class="headerlink" title="3.1.2 外部原因"></a>3.1.2 外部原因</h4><p>外部原因主要是温度、电源、环境和配置等。首先介绍<strong>温度</strong>因素是如何产生故障：</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gieo0netx2j31hc0u0gmo.jpg" alt="PPT-12"></p>
+<p>高温不仅能够导致SSD更快损耗，也能够使固件内部的部分受到损坏（能够导致网速下降等问题）。除了高温，低温也会使得磁盘的性能下降。所有性能下降都能造成Fail-slow故障。</p>
+<p>温度以外，<strong>电源</strong>也能够带来不小的影响：</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gieo6war0zj31hc0u0wgd.jpg" alt="PPT-13"></p>
+<p>电源不足，处理器的性能无法达到理想的水平。电源部分出现故障，会导致处理器由于电能不足所导致的性能下降。当有的机器需要大量电能时，会抢占其他周围机器的电能，导致其他机器电能不足。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gieobc211ij31hc0u075f.jpg" alt="PPT-14"></p>
+<p>环境因素中的<strong>海拔</strong>会产生故障，在装机时接触不佳的线路等也会产生Fail-slow故障。在<strong>配置</strong>方面，有的BIOS会不正确地减慢新机器的时钟，而有的错误的初始化代码会禁用处理器缓存。这些外部因素都能够为整个集群带来很大影响。</p>
+<h3 id="3-2-故障转换"><a href="#3-2-故障转换" class="headerlink" title="3.2 故障转换"></a>3.2 故障转换</h3><p>在发现了以上这些根本原因以后，作者们发现一些故障类型能过转换为Fail-slow故障。在这些故障类型中，主要介绍Fail-stop、Fail-transient和Fail-partial。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gieol93knlj31hc0u0dir.jpg" alt="PPT-15"></p>
+<p>对于<strong>Fail-stop类型</strong>，许多硬件是通过网络相连在一起的，健康的节点会被集群中的那些Fail-stop节点影响成为Fail-slow节点。对于<strong>Fail-transient类型</strong>，如果Fail-transient故障出现较为罕见，可以被称之为transient。当这个故障类型过于频繁时，它就不再是“transient”，之前应对Fail-transient故障的掩盖故障的策略面对频繁的Fail-transient故障不再适用，反而会对性能造成很大影响。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gieotkc3tmj31hc0u0q4p.jpg" alt="PPT-16"></p>
+<p>对于<strong>Fail-partial类型</strong>，当出现故障的规模不断增加，掩盖故障的方法会对整个集群的性能带来不好的影响。上面图片中展示了一些故障模型相应的例子便于说明。</p>
+<h3 id="3-3-症状"><a href="#3-3-症状" class="headerlink" title="3.3 症状"></a>3.3 症状</h3><p>Fail-slow故障有哪些症状呢？作者们用一张图片清晰地展示了4中不同的症状：</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gieowksvcgj31hc0u076w.jpg" alt="PPT-17"></p>
+<p>分别是永久下降、暂时下降、部分下降和暂时停止。</p>
+<ul>
+<li>永久下降：设备在性能下降后不再回到正常状态（除非手动修复）</li>
+<li>暂时下降：设备的性能反复处于正常状态和低性能的状态</li>
+<li>部分下降：只有设备的某些部分出现了下降</li>
+<li>暂时停止：设备会偶尔重启，因此导致性能下降为0</li>
+</ul>
+<h3 id="3-4-影响"><a href="#3-4-影响" class="headerlink" title="3.4 影响"></a>3.4 影响</h3><p>Fail-slow故障不仅会影响提供这个服务的机器，也会影响整个集群，并且很久才能会被发现。<strong>影响本机</strong>的方面主要体现在连锁的根本原因。举一个例子：当风扇集群正常运行时，机器运行也很正常。当风扇集群中的一个出现故障损坏以后，其他的风扇就会以最大速度运行来弥补损失。超速运行的风扇集群会产生大量的噪音和振动，而振动会使得磁盘的性能大幅下降，如吞吐量下降至KB/s的级别。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1giep22ktcnj31hc0u0mzh.jpg" alt="PPT-18"></p>
+<p>对于集群内一个缓慢的节点，其性能的下降会产生集群内连锁影响。举一个例子：在MapReduce服务中，一个mapper很快完成了map的工作，但由于其网卡出现故障，传输缓慢，数据由mapper向reducer移动的速度相当缓慢。雪上加霜的是，所有的reducer是健康的机器用带锁的任务槽实现的，由于锁的数量限制，最后这个健康的机器将不再有空闲的任务槽，导致整个集群崩坏。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1giep26l4tvj31hc0u0tar.jpg" alt="PPT-19"></p>
+<p>一般的故障如Fail-stop故障，会因为其中的“stop”较好发现和解决。但Fail-slow故障不一样。下图展示了报告中工程师们探查到Fail-slow故障所消耗的时间。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1giep28h4hjj31hc0u0ac4.jpg" alt="PPT-20"></p>
+<p>我们可以发现，有超过半数的报告中工程师们花费好几周甚至上月的时间来检测Fail-slow故障，大部分故障都需要一天以上的时间进行检测。为什么会这样呢？</p>
+<p>首先Fail-slow故障出现的次数相比于Fail-stop较少，但其原因却更为复杂。由于连锁反应，机器出现Fail-slow故障的根本原因也许不会在这个机器上。另外，根本原因由内部和外部组成，内部好说，但外部因素是工程师们无法控制的。除此之外，由于工程师们对整个硬件机构没办法整体探查，这也是导致耗时较长的原因之一。</p>
+<h2 id="4-建议"><a href="#4-建议" class="headerlink" title="4 建议"></a>4 建议</h2><p>作者们根据以上的症状、影响，对供应商、操作员和系统设计师提出了一些建议。具体如下，不再赘述了。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1giep2aaam7j31hc0u0763.jpg" alt="PPT-21"></p>
+
     </div>
 
     
