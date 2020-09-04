@@ -22,20 +22,24 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"8.0.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
   </script>
 
-  <meta name="description" content="Hanlin &quot;Vincent&quot; Ke">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Tags">
-<meta property="og:url" content="http://example.com/tags/index.html">
+  <meta name="description" content="今天向大家介绍的是由芝加哥大学教授Haryadi S. Gunawi领头撰写的有关分布式系统中硬件性能故障的文章：Fail-slow at scale: evidence of hardware performance faults in large production systems">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【论文笔记】Fail-Slow at Scale">
+<meta property="og:url" content="http://example.com/2020/09/04/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91Fail-Slow-at-Scale/index.html">
 <meta property="og:site_name" content="Hanlin Ke">
-<meta property="og:description" content="Hanlin &quot;Vincent&quot; Ke">
+<meta property="og:description" content="今天向大家介绍的是由芝加哥大学教授Haryadi S. Gunawi领头撰写的有关分布式系统中硬件性能故障的文章：Fail-slow at scale: evidence of hardware performance faults in large production systems">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2020-09-03T15:58:37.000Z">
-<meta property="article:modified_time" content="2020-09-03T16:02:12.894Z">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1giegz5tg3aj31hc0u0wg0.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1giehdqv4omj31hc0u00v3.jpg">
+<meta property="article:published_time" content="2020-09-03T16:36:58.000Z">
+<meta property="article:modified_time" content="2020-09-04T04:07:36.814Z">
 <meta property="article:author" content="Hanlin Ke">
+<meta property="article:tag" content="paper presentations">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1giegz5tg3aj31hc0u0wg0.jpg">
 
 
-<link rel="canonical" href="http://example.com/tags/">
+<link rel="canonical" href="http://example.com/2020/09/04/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91Fail-Slow-at-Scale/">
 
 
 <script class="page-configurations">
@@ -43,13 +47,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : false,
+    isPost : true,
     lang   : 'en'
   };
 </script>
 
-  <title>Tags | Hanlin Ke
-</title>
+  <title>【论文笔记】Fail-Slow at Scale | Hanlin Ke</title>
   
 
 
@@ -243,53 +246,124 @@
 </noscript>
 
 
-    <div class="main-inner page posts-expand">
+    <div class="main-inner post posts-expand">
       
-  
-  
 
       
 
     
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/09/04/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91Fail-Slow-at-Scale/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gidvl5v909j31400u0win.jpg">
+      <meta itemprop="name" content="Hanlin Ke">
+      <meta itemprop="description" content="Hanlin "Vincent" Ke">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hanlin Ke">
+    </span>
+
     
     
-    <div class="post-block" lang="en">
       <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【论文笔记】Fail-Slow at Scale
+        </h1>
 
-<h1 class="post-title" itemprop="name headline">Tags
-</h1>
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
 
-<div class="post-meta-container">
+      <time title="Created: 2020-09-04 00:36:58 / Modified: 12:07:36" itemprop="dateCreated datePublished" datetime="2020-09-04T00:36:58+08:00">2020-09-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Papers/" itemprop="url" rel="index"><span itemprop="name">Papers</span></a>
+        </span>
+    </span>
+
   
-
 </div>
 
-</header>
+        </div>
+      </header>
 
-      
-      
-      
-      <div class="post-body">
-          <div class="tag-cloud">
-  <div class="tag-cloud-title">
-    2 tags in total
-  </div>
-  <div class="tag-cloud-tags">
-    <a href="/tags/paper-notes/" style="font-size: 12px;" class="tag-cloud-0">paper notes</a> <a href="/tags/paper-presentations/" style="font-size: 12px;" class="tag-cloud-0">paper presentations</a>
-  </div>
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>今天向大家介绍的是由芝加哥大学教授Haryadi S. Gunawi领头撰写的有关分布式系统中硬件性能故障的文章：<em>Fail-slow at scale: evidence of hardware performance faults in large production systems</em></p>
+<a id="more"></a>
+
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1giegz5tg3aj31hc0u0wg0.jpg" alt="PPT-0"></p>
+<p>在介绍作者们引入的Fail-slow故障之前，我们先回顾一下之前已有的故障模型：</p>
+<ol>
+<li>Fail-stop：出现该故障的服务停止工作，通常由磁盘故障等引起；</li>
+<li>Fail-partial：出现该故障的服务需要<del>多次</del>重试，通常由存储系统中子系统的部分故障等引起；</li>
+<li>Fail-transient：出现该故障的服务在重置（reset）之后不会再次出现这种故障，通常由硬件或者软件引起。</li>
+</ol>
+<p>作者们在实际生产环境中发现，这些故障在服务的其中一个节点中产生最后都会引起整个服务集群的性能下降。即，<strong>服务虽然仍在工作且能够被使用，提供服务时的性能有所下降</strong>。这就是<strong>Fail-slow故障</strong>，一种仍在研究中的故障模型。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1giehdqv4omj31hc0u00v3.jpg" alt="PPT-1"></p>
+<p>Fail-slow故障具有两大特征：硬件缓慢和连锁反应。举一个例子：某台机器上的一个1Gb带宽的网卡突然以1 kb/s的速度传输。这台“运行”缓慢的机器向其上游节点引起连锁反应，最终导致整个集群“运行”缓慢。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>Hanlin Ke
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="http://example.com/2020/09/04/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91Fail-Slow-at-Scale/" title="【论文笔记】Fail-Slow at Scale">http://example.com/2020/09/04/【论文笔记】Fail-Slow-at-Scale/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
 </div>
+
+          <div class="post-tags">
+              <a href="/tags/paper-presentations/" rel="tag"># paper presentations</a>
+          </div>
 
         
-      </div>
-      
-      
-      
-    </div>
-    
 
-    
-    
-    
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/09/03/What-is-fail-slow-failure/" rel="prev" title="What is fail-slow failure?">
+                  <i class="fa fa-chevron-left"></i> What is fail-slow failure?
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+  
+  
+  
+
 
 
       
