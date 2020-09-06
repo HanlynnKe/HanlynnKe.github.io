@@ -38,8 +38,16 @@
 <meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gig891rw9cj31hc0u0ju3.jpg">
 <meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gig90x778sj31hc0u0myp.jpg">
 <meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gig93uw0b3j31hc0u0q42.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxgkk1xmj31hc0u0tbj.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxhvqvcwj31hc0u0jtx.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxmc0buuj31hc0u076r.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxpq4e44j31hc0u00vh.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxvsgbcgj31hc0u00v2.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigy67r5aej31hc0u0tbq.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigyh5cp4xj31hc0u0di1.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigynu7r7kj31hc0u0my1.jpg">
 <meta property="article:published_time" content="2020-09-05T14:44:21.000Z">
-<meta property="article:modified_time" content="2020-09-05T16:54:21.022Z">
+<meta property="article:modified_time" content="2020-09-06T07:27:25.705Z">
 <meta property="article:author" content="Hanlin Ke">
 <meta property="article:tag" content="paper presentations">
 <meta name="twitter:card" content="summary">
@@ -297,7 +305,7 @@
           <i class="far fa-calendar-check"></i>
         </span>
         <span class="post-meta-item-text">Edited on</span>
-        <time title="Modified: 2020-09-06 00:54:21" itemprop="dateModified" datetime="2020-09-06T00:54:21+08:00">2020-09-06</time>
+        <time title="Modified: 2020-09-06 15:27:25" itemprop="dateModified" datetime="2020-09-06T15:27:25+08:00">2020-09-06</time>
       </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -355,7 +363,33 @@
 <p>具体来说，当检测到故障转移缓慢的节点时，IASO会在客户监视UI上生成用户警报。 IASO还对站点可靠性工程师（SRE）进行寻呼，以便他们可以与受影响的客户一起解决问题。</p>
 <h3 id="1-4-实验结果"><a href="#1-4-实验结果" class="headerlink" title="1.4 实验结果"></a>1.4 实验结果</h3><p>在实验结果方面，团队也是做了详细的汇报，主要通过以下3个方面：</p>
 <p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gig93uw0b3j31hc0u0q42.jpg" alt="PPT-8"></p>
-<h4 id="1-4-1-失败的尝试"><a href="#1-4-1-失败的尝试" class="headerlink" title="1.4.1 失败的尝试"></a>1.4.1 失败的尝试</h4><h4 id="1-4-2-成功的结果"><a href="#1-4-2-成功的结果" class="headerlink" title="1.4.2 成功的结果"></a>1.4.2 成功的结果</h4><h4 id="1-4-3-真假故障"><a href="#1-4-3-真假故障" class="headerlink" title="1.4.3 真假故障"></a>1.4.3 真假故障</h4><h2 id="2-数据集"><a href="#2-数据集" class="headerlink" title="2 数据集"></a>2 数据集</h2><h3 id="2-1-数据规模"><a href="#2-1-数据规模" class="headerlink" title="2.1 数据规模"></a>2.1 数据规模</h3><h3 id="2-2-有关发现"><a href="#2-2-有关发现" class="headerlink" title="2.2 有关发现"></a>2.2 有关发现</h3>
+<h4 id="1-4-1-失败的尝试"><a href="#1-4-1-失败的尝试" class="headerlink" title="1.4.1 失败的尝试"></a>1.4.1 失败的尝试</h4><p>在得出最后的计算公式之前，Gunawi教授带领的团队首先直接用超时计数作为得分，但作用于3个确实性能下降的实例样本后，得到的数据图表却让人很不满意：每次超时都是以突发的方式发生，但整个时间间隔内故障却十分严重。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxgkk1xmj31hc0u0tbj.jpg" alt="PPT-9"></p>
+<p>因此，他们得到一个结论：不保存给定时间段内每个peer的得分情况是无法检测到高分是短暂出现还是持续出现的。紧接着，他们利用超时计数，将得分设置为最近3分钟窗口内得分的中位数，得到的结果很理想，在故障严重的时间段内保持较高的分数，即左下的图表。再后来他们就得到了[上面](#1.3.1 检测阶段)所提到的得分计算公式。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxhvqvcwj31hc0u0jtx.jpg" alt="PPT-10"></p>
+<h4 id="1-4-2-成功的结果"><a href="#1-4-2-成功的结果" class="headerlink" title="1.4.2 成功的结果"></a>1.4.2 成功的结果</h4><p>利用[最终](#1.3.1 检测阶段)的计算公式，团队得到了理想的图表：出现故障的时候得分维持在高分。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxmc0buuj31hc0u076r.jpg" alt="PPT-11"></p>
+<p>有了正确的计算公式，就能够更好的说明[检测阶段](#1.3.1 检测阶段)部分最后一段话中“得分数据库以这些数据中30%位置的得分表示当前得分并输入聚类算法”含义：</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxpq4e44j31hc0u00vh.jpg" alt="PPT-12"></p>
+<p>如图，在39:37的时候节点3就已经出现超时问题了，但在当前窗口这10次记录中，30%的位置位于37:57，当时的节点尚未超时，因而在得分数据库看来节点3还没有超时，此时节点3的得分是1左右。在下一个窗口时，30%的位置位于39:37此时确实有90左右的高分，故得分数据库记录其得分为90并利用聚类算法筛选并标记出异常点，进入缓和的阶段。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxvsgbcgj31hc0u00v2.jpg" alt="PPT-13"></p>
+<p>以上图为例，数据包丢失等fail-slow故障的出现大约在9:15发生，此后约15分钟内整个集群的性能下降至几乎为0，在9:18 - 9.26期间IASO框架检测出故障节点，并在9:26 - 9:30期间运行缓和策略使集群的性能恢复至原本的状态。这张图片反映出fail-slow不仅影响主机，还对主机所在的整个集群都有不容忽视的影响。此外，也能够侧面体现出IASO框架的可用性：将隔离性能下降节点的所需时间缩短至分钟级别的长度。</p>
+<h4 id="1-4-3-真假故障"><a href="#1-4-3-真假故障" class="headerlink" title="1.4.3 真假故障"></a>1.4.3 真假故障</h4><p>在二分类问题中有假阳性、假阴性的结果，在判别故障的时候也同样有相同的问题。图片中是作者们在实验中遇到的阳性（有故障）统计图。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigy67r5aej31hc0u0tbq.jpg" alt="PPT-14"></p>
+<p>可以看得出来，每个月都至少有10起以上真的fail-slow故障出现，同时，也有至少1起假阳性事件的发生。对于假阳性，作者们分为“确认是假阳性”和“可能是假阳性”两种分类。“确认”的假阳性节点自然是健康的节点被误判为慢节点，“可能”的假阳性节点是因为一些未知的原因出现的：比如SRE开始调试的时候发现问题消失了，所有硬件软件都运行正常。<strong>假阳性</strong>可能会导致集群暂时以较低的性能运行，但<strong>假阴性</strong>对于集群的影响是毁灭性的：可能会导致集群瘫痪，并且数小时都无法被检测到。</p>
+<h2 id="2-数据集"><a href="#2-数据集" class="headerlink" title="2 数据集"></a>2 数据集</h2><p>介绍完了框架，在数据集方面作者们也是下足了功夫：整个数据集包含232个有效案例，涉及39000个节点，整个时间跨度长达7个月。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigyh5cp4xj31hc0u0di1.jpg" alt="PPT-15"></p>
+<h3 id="2-1-数据规模"><a href="#2-1-数据规模" class="headerlink" title="2.1 数据规模"></a>2.1 数据规模</h3><ul>
+<li>有效案例数目：232</li>
+<li>集群大小：3 - 56个节点/集群</li>
+<li>节点总数：39000</li>
+<li>控制器VM运行的服务：Cassandra和ZooKeeper</li>
+<li>数据类型：support ticket （可能是文本……具体文中也没有说明）</li>
+<li>数据组成：发现的根本原因的类别、解决问题的步骤、事件发⽣的时间、集群标识号、客户集群上的软件版本、受影响的节点的模型系列、事件发⽣时节点存活的月份数</li>
+</ul>
+<h3 id="2-2-有关发现"><a href="#2-2-有关发现" class="headerlink" title="2.2 有关发现"></a>2.2 有关发现</h3><p>在对数据进行统计分析时，作者们发现几乎每天都会出现fail-slow故障，这也从侧面说明fail-slow故障是难以预料的。除此之外，作者们又仔细调查了根本原因、根本原因的子原因、存活时间、模型、处理耗时这几个方面的数据：</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigynu7r7kj31hc0u0my1.jpg" alt="PPT-16"></p>
+
     </div>
 
     
