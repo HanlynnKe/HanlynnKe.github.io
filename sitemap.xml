@@ -53,14 +53,14 @@
 
   
   <url>
-    <loc>https://www.vincentko.xyz/tags/OS/</loc>
+    <loc>https://www.vincentko.xyz/tags/paper-notes/</loc>
     <lastmod>2020-12-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://www.vincentko.xyz/tags/paper-notes/</loc>
+    <loc>https://www.vincentko.xyz/tags/OS/</loc>
     <lastmod>2020-12-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -76,14 +76,14 @@
 
   
   <url>
-    <loc>https://www.vincentko.xyz/categories/Labs/</loc>
+    <loc>https://www.vincentko.xyz/categories/Papers/</loc>
     <lastmod>2020-12-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://www.vincentko.xyz/categories/Papers/</loc>
+    <loc>https://www.vincentko.xyz/categories/Labs/</loc>
     <lastmod>2020-12-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
