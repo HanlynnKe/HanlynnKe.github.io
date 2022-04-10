@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.vincentko.xyz","root":"/","scheme":"Pisces","version":"8.0.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+
+  <meta name="description" content="Paper: Fail-Slow at Scale: Evidence of Hardware Performance Faults in Large Production Systems">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【论文笔记】What is fail-slow failure?">
+<meta property="og:url" content="https://www.vincentko.xyz/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91What-is-fail-slow-failure/index.html">
+<meta property="og:site_name" content="Hanlin Ke">
+<meta property="og:description" content="Paper: Fail-Slow at Scale: Evidence of Hardware Performance Faults in Large Production Systems">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-09-03T14:59:30.000Z">
+<meta property="article:modified_time" content="2022-04-10T18:00:53.951Z">
+<meta property="article:author" content="Hanlin Ke">
+<meta property="article:tag" content="paper notes">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://www.vincentko.xyz/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91What-is-fail-slow-failure/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>【论文笔记】What is fail-slow failure? | Hanlin Ke</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Hanlin Ke</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">Vincent的记事簿</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Failure-models"><span class="nav-number">1.</span> <span class="nav-text">1. Failure models</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Fail-slow-Faults"><span class="nav-number">2.</span> <span class="nav-text">2. Fail-slow Faults</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-how-do-they-manifest"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 how do they manifest?</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Root-causes"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Root causes</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-1-Internal-root-causes"><span class="nav-number">2.2.1.</span> <span class="nav-text">2.2.1 Internal root causes</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-1-1-SSD"><span class="nav-number">2.2.1.1.</span> <span class="nav-text">2.2.1.1 SSD</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-1-2-Disk"><span class="nav-number">2.2.1.2.</span> <span class="nav-text">2.2.1.2 Disk</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-1-3-Memory"><span class="nav-number">2.2.1.3.</span> <span class="nav-text">2.2.1.3 Memory</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-1-4-Network"><span class="nav-number">2.2.1.4.</span> <span class="nav-text">2.2.1.4 Network</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-1-5-Processor"><span class="nav-number">2.2.1.5.</span> <span class="nav-text">2.2.1.5 Processor</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-2-External-root-causes"><span class="nav-number">2.2.2.</span> <span class="nav-text">2.2.2 External root causes</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-2-1-Temperature-TEMP"><span class="nav-number">2.2.2.1.</span> <span class="nav-text">2.2.2.1 Temperature (TEMP)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-2-2-Power-PWR"><span class="nav-number">2.2.2.2.</span> <span class="nav-text">2.2.2.2 Power (PWR)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-2-3-Environment-ENV"><span class="nav-number">2.2.2.3.</span> <span class="nav-text">2.2.2.3 Environment (ENV)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2-2-2-4-Configuration-CONF"><span class="nav-number">2.2.2.4.</span> <span class="nav-text">2.2.2.4 Configuration (CONF)</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-3-Fault-conversions"><span class="nav-number">2.2.3.</span> <span class="nav-text">2.2.3 Fault conversions</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-Symptoms"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 Symptoms</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-Impacts"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 Impacts</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Suggestions-on-fail-slow-faults"><span class="nav-number">3.</span> <span class="nav-text">3. Suggestions on fail-slow faults</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-To-venders"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 To venders</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-1-Making-implicit-error-masking-explicit"><span class="nav-number">3.1.1.</span> <span class="nav-text">3.1.1 Making implicit error-masking explicit</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-2-Exposing-device-level-performance-statistics"><span class="nav-number">3.1.2.</span> <span class="nav-text">3.1.2 Exposing device-level performance statistics</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-To-operators"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 To operators</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-1-Online-diagnosis"><span class="nav-number">3.2.1.</span> <span class="nav-text">3.2.1 Online diagnosis</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-2-Monitoring-of-all-hardware-components"><span class="nav-number">3.2.2.</span> <span class="nav-text">3.2.2 Monitoring of all hardware components</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-3-Correlating-full-stack-information"><span class="nav-number">3.2.3.</span> <span class="nav-text">3.2.3 Correlating full-stack information</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-To-systems-designers"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 To systems designers</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-1-Making-implicit-error-masking-explicit"><span class="nav-number">3.3.1.</span> <span class="nav-text">3.3.1 Making implicit error-masking explicit</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-2-Fail-slow-to-fail-stop"><span class="nav-number">3.3.2.</span> <span class="nav-text">3.3.2 Fail-slow to fail-stop</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-3-Fail-slow-fault-injections"><span class="nav-number">3.3.3.</span> <span class="nav-text">3.3.3 Fail-slow fault injections</span></a></li></ol></li></ol></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Hanlin Ke"
+      src="https://tva1.sinaimg.cn/large/0081Kckwly1gm3f4z698kj31400u0778.jpg">
+  <p class="site-author-name" itemprop="name">Hanlin Ke</p>
+  <div class="site-description" itemprop="description">Vincent Hanlin Ke</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/HanlynnKe" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;HanlynnKe" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.linkedin.com/in/hanlynnke/" title="LinkedIn → https:&#x2F;&#x2F;www.linkedin.com&#x2F;in&#x2F;hanlynnke&#x2F;" rel="noopener" target="_blank"><i class="fab fa-linkedin fa-fw"></i>LinkedIn</a>
+      </span>
+  </div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.vincentko.xyz/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91What-is-fail-slow-failure/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://tva1.sinaimg.cn/large/0081Kckwly1gm3f4z698kj31400u0778.jpg">
+      <meta itemprop="name" content="Hanlin Ke">
+      <meta itemprop="description" content="Vincent Hanlin Ke">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hanlin Ke">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【论文笔记】What is fail-slow failure?
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2020-09-03 22:59:30" itemprop="dateCreated datePublished" datetime="2020-09-03T22:59:30+08:00">2020-09-03</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2022-04-11 02:00:53" itemprop="dateModified" datetime="2022-04-11T02:00:53+08:00">2022-04-11</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Papers/" itemprop="url" rel="index"><span itemprop="name">Papers</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><strong><em>Paper: Fail-Slow at Scale: Evidence of Hardware Performance Faults in Large Production Systems</em></strong></p>
+<a id="more"></a>
+
+<h2 id="1-Failure-models"><a href="#1-Failure-models" class="headerlink" title="1. Failure models"></a>1. Failure models</h2><ul>
+<li>Fail-stop: The service stop working, caused by entire disk failure etc.</li>
+<li>Fail-partial: The service need retry, caused by the failure in pieces of storage subsystem.</li>
+<li>Fail-transient: The service will not recur faults after reset, caused by hardwares or softwares.</li>
+<li>Fail-silent: The service ignore the transient, non-deterministic errors and send corrupt messages.</li>
+<li>Byzantine failure: An inconsistent, unpredictable failure. The status and behavior of faulty service is unknown to other peers.</li>
+<li><strong>Fail-slow (hardware)</strong>: The service is still running and functional but in a degraded mode.</li>
+</ul>
+<h2 id="2-Fail-slow-Faults"><a href="#2-Fail-slow-Faults" class="headerlink" title="2. Fail-slow Faults"></a>2. Fail-slow Faults</h2><p>Fail-slow hardware is an under-studied failure model</p>
+<h3 id="2-1-how-do-they-manifest"><a href="#2-1-how-do-they-manifest" class="headerlink" title="2.1 how do they manifest?"></a>2.1 how do they manifest?</h3><p>Current distributed systems are deployed at scale, with many intricacies of large-scale operational conditions. The probability that a fail-slow hardware incident can occur is larger than that in the past.</p>
+<p>All major hardware components can exhibit fail-slow faults:</p>
+<table>
+<thead>
+<tr>
+<th>Phenomena</th>
+<th>Causes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Disk throughput drops</td>
+<td>Vibration</td>
+</tr>
+<tr>
+<td>SSD operations stall</td>
+<td>Firmware bugs</td>
+</tr>
+<tr>
+<td>Memory cards degrade to 25% of normal speed</td>
+<td>Loose NVDIMM connection</td>
+</tr>
+<tr>
+<td>CPUs run in 50% speed</td>
+<td>Lack of power</td>
+</tr>
+<tr>
+<td>Network cards performance collapse to Kbps level</td>
+<td>Buffer corruption &amp; retransmission</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-Root-causes"><a href="#2-2-Root-causes" class="headerlink" title="2.2 Root causes"></a>2.2 Root causes</h3><h4 id="2-2-1-Internal-root-causes"><a href="#2-2-1-Internal-root-causes" class="headerlink" title="2.2.1 Internal root causes"></a>2.2.1 Internal root causes</h4><p>Including firmware issues (FW)、device errors (ERR) in 5 types of hardware</p>
+<h5 id="2-2-1-1-SSD"><a href="#2-2-1-1-SSD" class="headerlink" title="2.2.1.1 SSD"></a>2.2.1.1 SSD</h5><ul>
+<li>Firmware bugs<ul>
+<li>Some internal writes trigger hardware assertion failure and reboot the device</li>
+</ul>
+</li>
+<li>Read retries with different voltages<ul>
+<li>Read a flash page =&gt; SSD controller set a certain voltage threshold</li>
+<li>Flash chips wear out =&gt; read operation with default voltage threshold fail =&gt; SSD controller keep retrying the read with different threshold</li>
+</ul>
+</li>
+<li>RAIN / parity-based read reconstruction<ul>
+<li>Data cannot be read =&gt; SSD reconstruct the page with RAIN</li>
+<li>RAIN reconstruct is a recursion process + newer TLC-based SSDs using LDPC codes which takes longer time to reconstruct</li>
+</ul>
+</li>
+<li>Heavy GC in partially-failing SSD<ul>
+<li>More chips die =&gt; the size of over-provisioned area get reduced =&gt; GC more frequently</li>
+</ul>
+</li>
+<li>Broken parallelism by suboptimal wear-leveling<ul>
+<li>Ideally, large IOs are mapped to parallel channels/chips to increase IO parallelism</li>
+<li>Wear-leveling is a kind of algorithm that maximize the use of memory and prevent flash from wearing out too fast. The process of the algorithm takes time (credit to: <a target="_blank" rel="noopener" href="https://blog.csdn.net/yuzhihui_no1/article/details/46531811">https://blog.csdn.net/yuzhihui_no1/article/details/46531811</a>)</li>
+<li>Bad chips =&gt; wear-leveling algorithm makes suboptimal mapping =&gt; SSD pages might wear out quickly =&gt; IOs are less-paralleled</li>
+</ul>
+</li>
+<li>Hot temperature to wear-outs, repeated erases and reduced space<ul>
+<li>Temperature goes up =&gt; SSD pages wear out faster + voltage threshold modeling is not effective =&gt; SSD blocks are not getting reset properly after being erased =&gt; erased again… =&gt; SSD blocks that does not reset properly will be marked unusable =&gt; over-provisioned area reduced =&gt; GC more frequently</li>
+</ul>
+</li>
+<li>Write amplification<ul>
+<li>Faster wear-outs + more frequent GCs = higher write amplification</li>
+</ul>
+</li>
+<li>Not all chips are created equal<ul>
+<li>Qualites of SSDs are unequal</li>
+</ul>
+</li>
+</ul>
+<h5 id="2-2-1-2-Disk"><a href="#2-2-1-2-Disk" class="headerlink" title="2.2.1.2 Disk"></a>2.2.1.2 Disk</h5><ul>
+<li>Firmware bugs<ul>
+<li>A disk controller delays IO requests for tens of seconds</li>
+<li>A disk “jitters” every few seconds</li>
+<li>A RAID controller with weird bug (stalled =&gt; restarted =&gt; worked with occasional timeouts and retries)</li>
+<li>A bad disk causes many IO timeouts</li>
+</ul>
+</li>
+<li>Device errors<ul>
+<li>Extensive disk rots =&gt; RAID controller initiates frequent RAID rebuilding during run time</li>
+<li>Disk status in good-bad continuous transition =&gt; cause issues affect users’ VMs</li>
+<li>Media failures =&gt; disks retry every read operation multiple times before returning to OS</li>
+</ul>
+</li>
+<li>Weak heads<ul>
+<li>Root cause is unclear</li>
+<li>Gunk (spills from actuator assembly and accumulates between disk head and platter) causes slow movement of disk head</li>
+</ul>
+</li>
+<li>Other causes<ul>
+<li>Environment conditions</li>
+<li>Temperature</li>
+</ul>
+</li>
+</ul>
+<h5 id="2-2-1-3-Memory"><a href="#2-2-1-3-Memory" class="headerlink" title="2.2.1.3 Memory"></a>2.2.1.3 Memory</h5><ul>
+<li>Device errors<ul>
+<li>Chips mask partial memory errors and don’t exposing bad address =&gt; available memory size decrease =&gt; high cache miss =&gt; more frequent page swapping =&gt; slow performance</li>
+</ul>
+</li>
+<li>External causes<ul>
+<li>Environment conditions</li>
+<li>Human mistakes</li>
+</ul>
+</li>
+<li>SRAM errors<ul>
+<li>A regular occurrence in large-scale infrastructure, a major culprit of service disruptions</li>
+<li>Errors on data paths =&gt; transparently masked =&gt; a CRC validation error =&gt; simply retry network packet / disk IO</li>
+<li>Errors on control paths =&gt; broken =&gt; devices occasional reboot</li>
+</ul>
+</li>
+</ul>
+<h5 id="2-2-1-4-Network"><a href="#2-2-1-4-Network" class="headerlink" title="2.2.1.4 Network"></a>2.2.1.4 Network</h5><ul>
+<li>Firmware bugs<ul>
+<li>Bad routing algorithm:<ul>
+<li>Dynamic routing algorithms on stock driver / firmware  do not work as promised =&gt; network performance decrease to half of maximum performance</li>
+<li>MAC learning is not being responsive + special types of traffic  are not working well =&gt; traffic floods</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>NIC driver bugs<ul>
+<li>Dropping packets and collapsing TCP performance </li>
+<li>Cause 5% package loss =&gt; many VMs go into “blue screen of death”</li>
+<li>Cause “very poor” throughput =&gt; operators have to disable TCP offload to solve the problem </li>
+<li>Cause an unexpected auto-negotiation between a NIC and a TOR switch (接入交换机) =&gt; limit the bandwidth between them</li>
+</ul>
+</li>
+<li>Devices errors<ul>
+<li>Bad design on network cards</li>
+</ul>
+</li>
+<li>External causes<ul>
+<li>Environment conditions</li>
+<li>Configuration issues</li>
+<li>Temperature</li>
+</ul>
+</li>
+</ul>
+<h5 id="2-2-1-5-Processor"><a href="#2-2-1-5-Processor" class="headerlink" title="2.2.1.5 Processor"></a>2.2.1.5 Processor</h5><ul>
+<li>External causes<ul>
+<li>Most of the fail-slow CPUs are caused by configuration mistakes, environment conditions, temperate issues and power shortage</li>
+</ul>
+</li>
+</ul>
+<h4 id="2-2-2-External-root-causes"><a href="#2-2-2-External-root-causes" class="headerlink" title="2.2.2 External root causes"></a>2.2.2 External root causes</h4><h5 id="2-2-2-1-Temperature-TEMP"><a href="#2-2-2-1-Temperature-TEMP" class="headerlink" title="2.2.2.1 Temperature (TEMP)"></a>2.2.2.1 Temperature (TEMP)</h5><ul>
+<li>Clogged air filter =&gt; high temperature =&gt; break firmware’s internal parts</li>
+<li>Cold environment =&gt; low temperature =&gt; higher incidence of slow performance</li>
+<li>Broken fans =&gt; one fan stopped others run at maximal speed =&gt; heavy noise + vibration =&gt; degrade disk performance</li>
+<li>Buggy fan firmware =&gt; react insufficiently when CPU-intensive works coming =&gt; high temperature =&gt; CPU reduces speed</li>
+<li>Improper design / assembly / operation</li>
+</ul>
+<h5 id="2-2-2-2-Power-PWR"><a href="#2-2-2-2-Power-PWR" class="headerlink" title="2.2.2.2 Power (PWR)"></a>2.2.2.2 Power (PWR)</h5><ul>
+<li>Insufficient capacitors =&gt; inadequate voltage or voltage drop =&gt; low performance</li>
+<li>PCU firmware bugs =&gt; PCU do not deliver enough power =&gt; machine fail off power control</li>
+<li>Fail-partial power supply =&gt; low performance</li>
+<li>Power-hungry neighbors =&gt; inadequate power for others =&gt; power supply unstable</li>
+<li>Faulty motherboard sensors =&gt; report faulty value to OS =&gt; OS configure CPUs to run in energy saving mode</li>
+</ul>
+<h5 id="2-2-2-3-Environment-ENV"><a href="#2-2-2-3-Environment-ENV" class="headerlink" title="2.2.2.3 Environment (ENV)"></a>2.2.2.3 Environment (ENV)</h5><ul>
+<li>Altitude<ul>
+<li>At 7500 ft, machine enter thermal throttle =&gt; cooling design inappropriate </li>
+<li>At 7500 ft, memory systems has more ECC checks and repairs</li>
+</ul>
+</li>
+<li>Loose interconnects<ul>
+<li>Loose network cables and pinched fiber optics =&gt; network delay</li>
+<li>Loose PCIe connections between SSDs and PCIe slots =&gt; device driver layer retry operations multiple times.</li>
+<li>NVDIMM not plugged in properly</li>
+</ul>
+</li>
+<li>Vibration<ul>
+<li>Faulty chassis fan surrounding the nodes =&gt; strong vibration =&gt; drives in recovery mode</li>
+</ul>
+</li>
+<li>Environment and operating condition mismatch</li>
+</ul>
+<h5 id="2-2-2-4-Configuration-CONF"><a href="#2-2-2-4-Configuration-CONF" class="headerlink" title="2.2.2.4 Configuration (CONF)"></a>2.2.2.4 Configuration (CONF)</h5><ul>
+<li>Buggy BIOS firmware: BIOS incorrectly down-clocking the CPUs of newly-added machines in cluster =&gt; the newly-added machines’ work load is the same as others but in a degraded status</li>
+<li>Human mistakes</li>
+</ul>
+<h4 id="2-2-3-Fault-conversions"><a href="#2-2-3-Fault-conversions" class="headerlink" title="2.2.3 Fault conversions"></a>2.2.3 Fault conversions</h4><ul>
+<li>From fail-stop<ul>
+<li>Reasons: <em>Many hardware pieces are connected together, healthy nodes can be infected as fail-slow nodes by fail-stop nodes</em></li>
+<li>Examples:<ul>
+<li><em>A dead power supply =&gt; power from backup supply is not enough =&gt; CPUs run in 50% speed</em></li>
+<li><em>A single bad disk =&gt; the entire RAID card’s performance is exhausted =&gt; Disk throughput drops</em></li>
+<li><em>A buggy firmware from vendors =&gt; flash cache layer is disabled and entire storage stack is slowed down =&gt; SSD operations stall</em></li>
+</ul>
+</li>
+<li>Results: <em>a robust fail-stop tolerate system should ensure that fail-stop fault does not convert to fail-slow</em></li>
+</ul>
+</li>
+<li>From fail-transient<ul>
+<li>Reasons: <em>Due to their transient and “rare” nature, firmware / software often mask these errors from user. If the fail-transient fault is not “rare”, the error masking overhead becomes the common case performance</em></li>
+<li>Examples:<ul>
+<li><em>A disk firmware trigger frequent “read-after-write” checks in a degraded disk  =&gt; Disk throughput drops</em></li>
+<li><em>Heavy ECC correction of many DRAM bit-flips =&gt; deemed to be nonfunctional</em></li>
+<li><em>A loose PCIe connection =&gt; driver retries IOs multiple times</em></li>
+<li><em>Loss/Corrupt network packets =&gt; heavy retries =&gt; network cards performance collapse to Kbps level</em></li>
+</ul>
+</li>
+<li>Result: <em>There must be a distinction between rare and frequent fail-transient faults. The former is acceptable to mask while the latter should be exposed to high-level software stack and monitering tools.</em></li>
+</ul>
+</li>
+<li>From fail-partial<ul>
+<li>Reason: <em>When the scale of partial failures grows, the fault masking would bring a negative impact to performance</em></li>
+<li>Examples:<ul>
+<li><em>The available memory size decreases =&gt; cache miss rate increases</em></li>
+<li><em>Bad chips in SSDs =&gt; reduce the size of over-provisioned space =&gt; more gabage collection</em></li>
+<li><em>Remapping of a large number of bad sectors =&gt; more disk seeks</em></li>
+</ul>
+</li>
+<li>Result: <em>There must be a distinction between small and large scale of fail-partial faults. The former is acceptable to mask while the latter should be exposed to high-level software stack and monitering tools.</em></li>
+</ul>
+</li>
+</ul>
+<h3 id="2-3-Symptoms"><a href="#2-3-Symptoms" class="headerlink" title="2.3 Symptoms"></a>2.3 Symptoms</h3><ul>
+<li>Permanent slowdown<ul>
+<li>The device does not return to normal condition (until mannually fixed) after its performance drops</li>
+</ul>
+</li>
+<li>Transient slowdown<ul>
+<li>The device performance fluctuates between normal condition and significant degradation</li>
+</ul>
+</li>
+<li>Partial slowdown<ul>
+<li>Only some parts of the device exhibit slowdown</li>
+</ul>
+</li>
+<li>Transient stop<ul>
+<li>The device occasionally reboots itself, thus there are times where the performance degrades to zero</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-4-Impacts"><a href="#2-4-Impacts" class="headerlink" title="2.4 Impacts"></a>2.4 Impacts</h3><ul>
+<li><p>Fail-slow hardwares can not only affect host machine but also cause cascading impacts across the cluster</p>
+</li>
+<li><p>Very hard to detect (hours or even months)</p>
+<ul>
+<li>Why?<ul>
+<li>Fail-slow hardware is not as frequent as fail-stop cases, and therefore the less-frequent but more complex failure cost plenty of time</li>
+<li>The root cause might not originate from the fail-slow hardware</li>
+<li>External environment conditions beyond the control of the operators can prolong diagnosis</li>
+<li>Operators do not always have full visibility of the entire hardware stack</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-Suggestions-on-fail-slow-faults"><a href="#3-Suggestions-on-fail-slow-faults" class="headerlink" title="3. Suggestions on fail-slow faults"></a>3. Suggestions on fail-slow faults</h2><h3 id="3-1-To-venders"><a href="#3-1-To-venders" class="headerlink" title="3.1 To venders"></a>3.1 To venders</h3><p><em>SUMMARY: When error masking becomes more frequent (e.g., due to increasing internal faults), more explicit signals should be thrown, rather than running with a high overhead. Device-level performance statistics should be collected and reported (e.g., via S.M.A.R.T) to facilitate further studies.</em></p>
+<h4 id="3-1-1-Making-implicit-error-masking-explicit"><a href="#3-1-1-Making-implicit-error-masking-explicit" class="headerlink" title="3.1.1 Making implicit error-masking explicit"></a>3.1.1 Making implicit error-masking explicit</h4><p>Fail-slow hardware is an “implicit” fault, due to error masking. But slowly increasing error rates would eventually cause cascading performance failures. Although statistics of error rates are obtainable from device, they are rarely monitored by the overall system. <strong>Venders might consider throwing explicit error signals when error rates far exceed the expected rate.</strong></p>
+<h4 id="3-1-2-Exposing-device-level-performance-statistics"><a href="#3-1-2-Exposing-device-level-performance-statistics" class="headerlink" title="3.1.2 Exposing device-level performance statistics"></a>3.1.2 Exposing device-level performance statistics</h4><p>Resulting from hourly collected hardware-level performance log and insufficient information, statistical questions are left unanswered (e.g., how often fail-slow hardware occurs, how much performance was degraded, what correlations fail-slow faults exhibit with other metrics such as device age, model, size, and vendor). <strong>We hope vendors will expose device-level performance data to support future statistical studies.</strong></p>
+<h3 id="3-2-To-operators"><a href="#3-2-To-operators" class="headerlink" title="3.2 To operators"></a>3.2 To operators</h3><p><em>SUMMARY: 39% root causes are external factors, thus troubleshooting fail-slow hardware must be done online. Due to the cascading root causes and impacts, full-stack monitoring is needed. Fail-slow root causes and impacts exhibit some correlation, thus statistical correlation techniques may be useful (with full-stack monitoring).</em></p>
+<h4 id="3-2-1-Online-diagnosis"><a href="#3-2-1-Online-diagnosis" class="headerlink" title="3.2.1 Online diagnosis"></a>3.2.1 Online diagnosis</h4><p>Since 39% of the cases are caused by external root causes, <strong>online diagnosis is important</strong>.</p>
+<h4 id="3-2-2-Monitoring-of-all-hardware-components"><a href="#3-2-2-Monitoring-of-all-hardware-components" class="headerlink" title="3.2.2 Monitoring of all hardware components"></a>3.2.2 Monitoring of all hardware components</h4><p><strong>Monitering all hardware components help operators target the exact the exact faulty hardware quickly when failure incidents are happened.</strong> With diverse and accurate information, operators can fully diagnose the problem.</p>
+<h4 id="3-2-3-Correlating-full-stack-information"><a href="#3-2-3-Correlating-full-stack-information" class="headerlink" title="3.2.3 Correlating full-stack information"></a>3.2.3 Correlating full-stack information</h4><p>With full-stack performance data, operators can use statistical approaches to pinpoint and isolate the root cause. <strong>Not only coarse-grained metrics but also fine-grained metrics should be monitored to correlate root causes and its impacts.</strong></p>
+<h3 id="3-3-To-systems-designers"><a href="#3-3-To-systems-designers" class="headerlink" title="3.3 To systems designers"></a>3.3 To systems designers</h3><p><em>SUMMARY: While software systems are effective in handling fail-stop (binary) model, more research is needed to tolerate fail-slow (non-binary) behavior. System architects, designers and developers can fault-inject their systems with all the root causes reported in this paper to evaluate the robustness of their systems.</em></p>
+<h4 id="3-3-1-Making-implicit-error-masking-explicit"><a href="#3-3-1-Making-implicit-error-masking-explicit" class="headerlink" title="3.3.1 Making implicit error-masking explicit"></a>3.3.1 Making implicit error-masking explicit</h4><p>Software systems should not just silently work around fail-slow hardware, but need to <strong>expose enough information to help troubleshooting</strong>.</p>
+<h4 id="3-3-2-Fail-slow-to-fail-stop"><a href="#3-3-2-Fail-slow-to-fail-stop" class="headerlink" title="3.3.2 Fail-slow to fail-stop"></a>3.3.2 Fail-slow to fail-stop</h4><p>Modern software systems are well equipped to handle fail-stop failures. Therefore, there are some opportunities of converting fail-slow failures to fail-stop failures:</p>
+<ul>
+<li><strong>Skip non-primary fail-slow components</strong><br>When non-primary components have fail-slow incidents, they could be skipped temporarily until the problem subsided.</li>
+<li><strong>Detect fail-slow recurrences</strong><br>Monitor the recurrence of fail-slow faults. If recurrences are happened, the exact component should be put offline.</li>
+</ul>
+<p>Besides opportunities, there are also some challenges:</p>
+<ul>
+<li>An automated shutdown algorithm should be robust</li>
+<li>Some storage devices cannot be abruptly taken offline</li>
+<li>Removing slow nodes can risk availability</li>
+<li>Shutting off devices should be at fine-grained level</li>
+<li>Due to the cascading nature, the solution for fail-slow hardware is to isolate the external factors but not shut them down.</li>
+</ul>
+<h4 id="3-3-3-Fail-slow-fault-injections"><a href="#3-3-3-Fail-slow-fault-injections" class="headerlink" title="3.3.3 Fail-slow fault injections"></a>3.3.3 Fail-slow fault injections</h4><p>System architects can inject fail-slow root causes reported in this paper to their systems and analyze the impacts. <strong>With fail-slow injections, operators can also evaluate whether their systems or monitoring tools signal the right warnings or errors.</strong></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>Hanlin Ke
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://www.vincentko.xyz/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91What-is-fail-slow-failure/" title="【论文笔记】What is fail-slow failure?">https://www.vincentko.xyz/【论文笔记】What-is-fail-slow-failure/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/paper-notes/" rel="tag"># paper notes</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+            </div>
+            <div class="post-nav-item">
+                <a href="/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91Fail-Slow-at-Scale/" rel="next" title="【论文笔记】Fail-Slow at Scale">
+                  【论文笔记】Fail-Slow at Scale <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hanlin Ke</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

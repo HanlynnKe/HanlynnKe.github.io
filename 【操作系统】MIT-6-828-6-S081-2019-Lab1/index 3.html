@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.vincentko.xyz","root":"/","scheme":"Pisces","version":"8.0.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+
+  <meta name="description" content="听闻嘟嘟子的操作系统实验课内容是做MIT的操作系统课的lab，自己也来了兴趣，能做多少做多少吧！一开始我没有仔细看xv6（实验用到的系统）的手册，也没怎么看指导书，拿来就做，实在是有些蠢蛋，不可避免地参考了网上其他人的资料。虽然我一直借鉴到了lab2，但心里一想感觉不是滋味，又不是在应付作业，抄别人的还不如自己写的收获大。在下的确是愚笨至极，lab1搞了两三天才弄出来，不过收获是真的挺多，也顺带复">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【操作系统】MIT 6.828&#x2F;6.S081 2019 Lab1">
+<meta property="og:url" content="https://www.vincentko.xyz/%E3%80%90%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E3%80%91MIT-6-828-6-S081-2019-Lab1/index.html">
+<meta property="og:site_name" content="Hanlin Ke">
+<meta property="og:description" content="听闻嘟嘟子的操作系统实验课内容是做MIT的操作系统课的lab，自己也来了兴趣，能做多少做多少吧！一开始我没有仔细看xv6（实验用到的系统）的手册，也没怎么看指导书，拿来就做，实在是有些蠢蛋，不可避免地参考了网上其他人的资料。虽然我一直借鉴到了lab2，但心里一想感觉不是滋味，又不是在应付作业，抄别人的还不如自己写的收获大。在下的确是愚笨至极，lab1搞了两三天才弄出来，不过收获是真的挺多，也顺带复">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://swtch.com/~rsc/thread/sieve.gif">
+<meta property="article:published_time" content="2020-12-28T03:45:09.000Z">
+<meta property="article:modified_time" content="2022-04-10T18:00:53.952Z">
+<meta property="article:author" content="Hanlin Ke">
+<meta property="article:tag" content="OS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://swtch.com/~rsc/thread/sieve.gif">
+
+
+<link rel="canonical" href="https://www.vincentko.xyz/%E3%80%90%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E3%80%91MIT-6-828-6-S081-2019-Lab1/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>【操作系统】MIT 6.828/6.S081 2019 Lab1 | Hanlin Ke</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Hanlin Ke</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">Vincent的记事簿</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#sleep-c"><span class="nav-number">1.</span> <span class="nav-text">sleep.c</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pingpong-c"><span class="nav-number">2.</span> <span class="nav-text">pingpong.c</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#primes-c"><span class="nav-number">3.</span> <span class="nav-text">primes.c</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#find-c"><span class="nav-number">4.</span> <span class="nav-text">find.c</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#xargs-c"><span class="nav-number">5.</span> <span class="nav-text">xargs.c</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Hanlin Ke"
+      src="https://tva1.sinaimg.cn/large/0081Kckwly1gm3f4z698kj31400u0778.jpg">
+  <p class="site-author-name" itemprop="name">Hanlin Ke</p>
+  <div class="site-description" itemprop="description">Vincent Hanlin Ke</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/HanlynnKe" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;HanlynnKe" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.linkedin.com/in/hanlynnke/" title="LinkedIn → https:&#x2F;&#x2F;www.linkedin.com&#x2F;in&#x2F;hanlynnke&#x2F;" rel="noopener" target="_blank"><i class="fab fa-linkedin fa-fw"></i>LinkedIn</a>
+      </span>
+  </div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.vincentko.xyz/%E3%80%90%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E3%80%91MIT-6-828-6-S081-2019-Lab1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://tva1.sinaimg.cn/large/0081Kckwly1gm3f4z698kj31400u0778.jpg">
+      <meta itemprop="name" content="Hanlin Ke">
+      <meta itemprop="description" content="Vincent Hanlin Ke">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hanlin Ke">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【操作系统】MIT 6.828/6.S081 2019 Lab1
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2020-12-28 11:45:09" itemprop="dateCreated datePublished" datetime="2020-12-28T11:45:09+08:00">2020-12-28</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2022-04-11 02:00:53" itemprop="dateModified" datetime="2022-04-11T02:00:53+08:00">2022-04-11</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Labs/" itemprop="url" rel="index"><span itemprop="name">Labs</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>听闻嘟嘟子的操作系统实验课内容是做MIT的操作系统课的lab，自己也来了兴趣，能做多少做多少吧！<br>一开始我没有仔细看xv6（实验用到的系统）的手册，也没怎么看指导书，拿来就做，实在是有些蠢蛋，不可避免地参考了网上其他人的资料。虽然我一直借鉴到了lab2，但心里一想感觉不是滋味，又不是在应付作业，抄别人的还不如自己写的收获大。在下的确是愚笨至极，lab1搞了两三天才弄出来，不过收获是真的挺多，也顺带复习了自己用C语言编写代码的能力，针不戳！</p>
+<a id="more"></a>
+
+<p>下面就是我在编写lab1相关代码的时候的一些备忘录，当然了，全部代码都会有。lab1主要是熟悉xv6这个利用精简指令集的类unix系统，编写sleep、pingpong、primes、find、xargs这5个指令的源代码。在写的过程中，我发现难度是逐渐上升的，不由得感慨MIT就是MIT。</p>
+<h2 id="sleep-c"><a href="#sleep-c" class="headerlink" title="sleep.c"></a>sleep.c</h2><ul>
+<li>使用 atoi 把字符串转化成数字</li>
+<li>使用 sleep 这个系统调用来实现sleep的功能</li>
+<li>注意在 main 函数中使用 exit() 退出程序</li>
+<li>注意输出 error 信息</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;kernel/types.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;user/user.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">main(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (argc &lt; <span class="number">2</span> || argc &gt; <span class="number">3</span>)</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="number">2</span>, <span class="string">&quot;Error message\n&quot;</span>);</span><br><span class="line">  <span class="keyword">int</span> x = atoi(argv[<span class="number">1</span>]);</span><br><span class="line">  sleep(x);</span><br><span class="line">  <span class="built_in">exit</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="pingpong-c"><a href="#pingpong-c" class="headerlink" title="pingpong.c"></a>pingpong.c</h2><ul>
+<li>使用 pipe 来建立管道</li>
+<li>使用 fork 来创建子进程</li>
+<li>使用 read 从管道中读取数据，write 从管道中写入数据</li>
+<li>个人认为这个程序的目的是让我们熟悉以上这四个系统调用函数，熟悉pipe的使用方法</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;kernel/types.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;user/user.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">main(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">char</span> buf[<span class="number">32</span>];</span><br><span class="line">  <span class="keyword">int</span> parent_fd[<span class="number">2</span>];</span><br><span class="line">  <span class="keyword">int</span> child_fd[<span class="number">2</span>];</span><br><span class="line">  pipe(parent_fd);</span><br><span class="line">  pipe(child_fd);</span><br><span class="line">  <span class="keyword">if</span> (fork() == <span class="number">0</span>) &#123;</span><br><span class="line">    read(parent_fd[<span class="number">0</span>], buf, <span class="number">4</span> * <span class="keyword">sizeof</span>(<span class="keyword">char</span>));</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="number">1</span>, <span class="string">&quot;%d: received %s\n&quot;</span>, getpid(), buf);</span><br><span class="line">    write(child_fd[<span class="number">1</span>], <span class="string">&quot;pong&quot;</span>, <span class="number">4</span> * <span class="keyword">sizeof</span>(<span class="keyword">char</span>));</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    write(parent_fd[<span class="number">1</span>], <span class="string">&quot;ping&quot;</span>, <span class="number">4</span> * <span class="keyword">sizeof</span>(<span class="keyword">char</span>));</span><br><span class="line">    read(child_fd[<span class="number">0</span>], buf, <span class="number">4</span> * <span class="keyword">sizeof</span>(<span class="keyword">char</span>));</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="number">1</span>, <span class="string">&quot;%d: received %s\n&quot;</span>, getpid(), buf);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">exit</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="primes-c"><a href="#primes-c" class="headerlink" title="primes.c"></a>primes.c</h2><ul>
+<li>个人认为这个程序是对上面pingpong程序中所使用的四个系统调用的综合应用，当然也用到了一些诸如管道重定向的方法，具体在xv6的手册中对wc程序的核心代码解释中出现</li>
+<li>利用管道来并发输出素数的方法主要参照的是Doug Mcllroy的<a target="_blank" rel="noopener" href="https://swtch.com/~rsc/thread/">素数筛</a>方法，左侧的进程把数字传递给右侧的进程，右侧的进程通过验证该数字是否能被已有的素数整除来去掉那些非素数，再把素数传递给后续的进程打印<br><img src="https://swtch.com/~rsc/thread/sieve.gif" alt="prime sieve"></li>
+<li>注意关闭进程不需要的文件描述符，即需要重定向</li>
+<li>注意将进程关闭干净，当write管道关闭后read管道将会返回EOF，可以利用这一点结束循环</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;kernel/types.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;user/user.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span></span><br><span class="line">redirect(<span class="keyword">int</span> k, <span class="keyword">int</span> pd[])</span><br><span class="line">&#123;</span><br><span class="line">  <span class="comment">// dups the read/write end onto the file decriptor 0/1</span></span><br><span class="line">  close(k);</span><br><span class="line">  dup(pd[k]);</span><br><span class="line">  <span class="comment">// close the file descriptors in &quot;pd&quot;</span></span><br><span class="line">  close(pd[<span class="number">0</span>]);</span><br><span class="line">  close(pd[<span class="number">1</span>]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span></span><br><span class="line">loop()</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">int</span> p, n;</span><br><span class="line">  <span class="keyword">int</span> pd[<span class="number">2</span>];</span><br><span class="line">  <span class="comment">// get prime number from the previous process</span></span><br><span class="line">  <span class="keyword">if</span> (read(<span class="number">0</span>, &amp;p, <span class="keyword">sizeof</span>(<span class="keyword">int</span>))) &#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;prime %d\n&quot;</span>, p);</span><br><span class="line">    pipe(pd);</span><br><span class="line">    <span class="keyword">if</span> (fork() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="comment">// parent - continue the loop</span></span><br><span class="line">      redirect(<span class="number">0</span>, pd);</span><br><span class="line">      loop();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">// child - get numbers from the previous process</span></span><br><span class="line">      redirect(<span class="number">1</span>, pd);  </span><br><span class="line">      <span class="keyword">while</span> (read(<span class="number">0</span>, &amp;n, <span class="keyword">sizeof</span>(<span class="keyword">int</span>))) &#123;</span><br><span class="line">        <span class="comment">// if the number &quot;n&quot; cannot be perfectly divided by</span></span><br><span class="line">	<span class="comment">// the prime number &quot;p&quot;, then &quot;n&quot; is a prime number</span></span><br><span class="line">        <span class="keyword">if</span> (n % p != <span class="number">0</span>) &#123;</span><br><span class="line">          <span class="comment">// generate this prime number to the next process</span></span><br><span class="line">	  write(<span class="number">1</span>, &amp;n, <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">main(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">int</span> p[<span class="number">2</span>];</span><br><span class="line">  <span class="comment">// create a new pipe and records</span></span><br><span class="line">  <span class="comment">// the read and write file desctiptors in the array &quot;p&quot;</span></span><br><span class="line">  pipe(p);</span><br><span class="line">  <span class="comment">// after fork, both parent and child</span></span><br><span class="line">  <span class="comment">// have file descriptors referring to the pipe &quot;p&quot;</span></span><br><span class="line">  <span class="keyword">if</span> (fork() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="comment">// parent</span></span><br><span class="line">    redirect(<span class="number">0</span>, p);</span><br><span class="line">    loop();</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// child</span></span><br><span class="line">    redirect(<span class="number">1</span>, p);</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">2</span>; i &lt; <span class="number">36</span>; i++) &#123;</span><br><span class="line">      <span class="comment">// generate numbers from 2 to 35 to the next process</span></span><br><span class="line">      write(<span class="number">1</span>, &amp;i, <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">exit</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="find-c"><a href="#find-c" class="headerlink" title="find.c"></a>find.c</h2><ul>
+<li>参照 ls.c 来读取文件夹</li>
+<li>利用递归在文件夹中的子文件夹查找文件</li>
+<li>不要递归进入 “.” 和 “..”，不然停不下来</li>
+<li>支持用正则表达式匹配字符串，参照 grep.c 当中的正则匹配器</li>
+<li>个人认为这个程序最麻烦的地方是理解 find 的过程以及正则匹配器的工作过程</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;kernel/types.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;kernel/stat.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;kernel/fs.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;user/user.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// RegExp matcher from grep.c </span></span><br><span class="line"><span class="comment">// (originates from Kernighan &amp; Pike, The Practice of Programming)</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">match_here</span><span class="params">(<span class="keyword">char</span>* re, <span class="keyword">char</span>* text)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">match_star</span><span class="params">(<span class="keyword">int</span> c, <span class="keyword">char</span>* re, <span class="keyword">char</span>* text)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">match</span><span class="params">(<span class="keyword">char</span>* re, <span class="keyword">char</span>* text)</span></span>;</span><br><span class="line"><span class="comment">// match_star: search for &quot;c*re&quot; at beginning of &quot;text&quot;</span></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">match_star(<span class="keyword">int</span> c, <span class="keyword">char</span>* re, <span class="keyword">char</span> *text)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">do</span> &#123;</span><br><span class="line">    <span class="keyword">if</span>(match_here(re, text))</span><br><span class="line">      <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">  &#125; <span class="keyword">while</span> (*text != <span class="string">&#x27;\0&#x27;</span> &amp;&amp; (*text++ == c || c == <span class="string">&#x27;.&#x27;</span>));</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// match_here: search for &quot;re&quot; at beginning of &quot;text&quot;</span></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">match_here(<span class="keyword">char</span>* re, <span class="keyword">char</span>* text)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (re[<span class="number">0</span>] == <span class="string">&#x27;\0&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">if</span> (re[<span class="number">1</span>] == <span class="string">&#x27;*&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> match_star(re[<span class="number">0</span>], re+<span class="number">2</span>, text);</span><br><span class="line">  <span class="keyword">if</span> (re[<span class="number">0</span>] == <span class="string">&#x27;$&#x27;</span> &amp;&amp; re[<span class="number">1</span>] == <span class="string">&#x27;\0&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> *text == <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">  <span class="keyword">if</span> (*text != <span class="string">&#x27;\0&#x27;</span> &amp;&amp; (re[<span class="number">0</span>] == <span class="string">&#x27;.&#x27;</span> || re[<span class="number">0</span>] == *text))</span><br><span class="line">    <span class="keyword">return</span> match_here(re+<span class="number">1</span>, text+<span class="number">1</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// match: a RegExp matcher</span></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">match(<span class="keyword">char</span>* re, <span class="keyword">char</span>* text)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (re[<span class="number">0</span>] == <span class="string">&#x27;^&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> match_here(re+<span class="number">1</span>, text);</span><br><span class="line">  <span class="comment">// must look at empty string</span></span><br><span class="line">  <span class="keyword">do</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (match_here(re, text))</span><br><span class="line">      <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">  &#125; <span class="keyword">while</span> (*text++ != <span class="string">&#x27;\0&#x27;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// imitate ls.c</span></span><br><span class="line"><span class="keyword">char</span>*</span><br><span class="line">fmt_name(<span class="keyword">char</span> *path)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">char</span> buf[DIRSIZ+<span class="number">1</span>];</span><br><span class="line">  <span class="keyword">char</span> *p;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// find first character after the last slash</span></span><br><span class="line">  <span class="keyword">for</span> (p = path + <span class="built_in">strlen</span>(path); p &gt;= path &amp;&amp; *p != <span class="string">&#x27;/&#x27;</span>; p--)</span><br><span class="line">  ;</span><br><span class="line">  p++;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// return the blank-padded name</span></span><br><span class="line">  <span class="keyword">if</span>(<span class="built_in">strlen</span>(p) &gt;= DIRSIZ)</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">  memmove(buf, p, <span class="built_in">strlen</span>(p));</span><br><span class="line">  <span class="built_in">memset</span>(buf + <span class="built_in">strlen</span>(p), <span class="string">&#x27; &#x27;</span>, DIRSIZ - <span class="built_in">strlen</span>(p));</span><br><span class="line">  <span class="keyword">return</span> buf;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span></span><br><span class="line">find(<span class="keyword">char</span>* path, <span class="keyword">char</span>* target)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">char</span> buf[<span class="number">512</span>], *p;</span><br><span class="line">  <span class="keyword">int</span> fd;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">dirent</span> <span class="title">de</span>;</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">stat</span> <span class="title">st</span>;</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> ((fd = open(path, <span class="number">0</span>)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="number">2</span>, <span class="string">&quot;find: cannot open %s\n&quot;</span>, path);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span> (fstat(fd, &amp;st) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="number">2</span>, <span class="string">&quot;find, cannot stat %s\n&quot;</span>, path);</span><br><span class="line">    close(fd);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">switch</span> (st.type) &#123;</span><br><span class="line">    <span class="keyword">case</span> T_FILE:</span><br><span class="line">      <span class="keyword">if</span> (match(target, fmt_name(path)))</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;%s\n&quot;</span>, path);</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> T_DIR:</span><br><span class="line">      <span class="keyword">if</span> (<span class="built_in">strlen</span>(path) + <span class="number">1</span> + DIRSIZ + <span class="number">1</span> &gt; <span class="keyword">sizeof</span> buf) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;find: path too long\n&quot;</span>);</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="built_in">strcpy</span>(buf, path);</span><br><span class="line">      p = buf + <span class="built_in">strlen</span>(buf);</span><br><span class="line">      *p++ = <span class="string">&#x27;/&#x27;</span>;</span><br><span class="line">      <span class="keyword">while</span> (read(fd, &amp;de, <span class="keyword">sizeof</span>(de)) == <span class="keyword">sizeof</span>(de)) &#123;</span><br><span class="line">	<span class="keyword">if</span> (de.inum == <span class="number">0</span>)</span><br><span class="line">	  <span class="keyword">continue</span>;</span><br><span class="line">        memmove(p, de.name, DIRSIZ);</span><br><span class="line">        p[DIRSIZ] = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (stat(buf, &amp;st) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">	  <span class="built_in">printf</span>(<span class="string">&quot;find: cannot stat %s\n&quot;</span>, buf);</span><br><span class="line">	  <span class="keyword">continue</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (<span class="built_in">strlen</span>(de.name) == <span class="number">1</span> &amp;&amp; de.name[<span class="number">0</span>] == <span class="string">&#x27;.&#x27;</span>)</span><br><span class="line">	  <span class="keyword">continue</span>;</span><br><span class="line">	<span class="keyword">if</span> (<span class="built_in">strlen</span>(de.name) == <span class="number">2</span> &amp;&amp; de.name[<span class="number">0</span>] == <span class="string">&#x27;.&#x27;</span> &amp;&amp; de.name[<span class="number">1</span>] == <span class="string">&#x27;.&#x27;</span>)</span><br><span class="line">	  <span class="keyword">continue</span>;</span><br><span class="line">	find(buf, target);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  close(fd);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">main(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (argc &lt; <span class="number">3</span> || argc &gt; <span class="number">3</span>) &#123;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="number">2</span>, <span class="string">&quot;exec find failed\n&quot;</span>);</span><br><span class="line">    <span class="built_in">exit</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  find(argv[<span class="number">1</span>], argv[<span class="number">2</span>]);</span><br><span class="line">  <span class="built_in">exit</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="xargs-c"><a href="#xargs-c" class="headerlink" title="xargs.c"></a>xargs.c</h2><ul>
+<li>需要理解什么是 <a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2019/08/xargs-tutorial.html">xargs</a>。我们知道管道命令可以将一个命令的标准输入转化为另一个命令的标准输入。但有的命令并不接受标准输入作为参数，只接受在命令行输入的参数作为参数，这导致无法用管道命令来传递参数。而xargs命令的作用就是将标准输入转化为命令行参数。在管道命令与其他命令一起时候在时候，在管道命令与真正要执行的命令之间可以使用xargs命令，将管道命令所得到的标准输入转化为命令行参数</li>
+<li>xargs命令也可以单独使用。输入<code>xargs</code>按下回车以后，命令行就会等待用户输入，作为标准输入，然后<code>ctrl+d</code>，表示输入结束。但xv6与unix系统下的xargx的不同：根据lab中的使用例子可以看出，xv6的xargs每次回车都会执行一次命令并输出结果，直到ctrl+d时结束；而linux中的实现则是一直接收输入，收到<code>ctrl+d</code>时才执行命令并输出结果</li>
+<li>需要使用 fork 和 exec 的系统调用来对每一行输入执行指令，在父进程记得使用 wait 等待子进程的结束</li>
+<li>每次只读1个字符，遇到换行符时停下执行命令</li>
+<li>在 kernel/param.h 里面有声明 MAXARG 按需使用</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;kernel/types.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;kernel/param.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;user/user.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span></span><br><span class="line">main(<span class="keyword">int</span> argc, <span class="keyword">char</span>* argv[])</span><br><span class="line">&#123; </span><br><span class="line">  <span class="keyword">char</span> args[MAXARG][MAXARG];</span><br><span class="line">  <span class="keyword">char</span>* p[MAXARG];</span><br><span class="line">  <span class="comment">// init</span></span><br><span class="line">  <span class="built_in">memset</span>(args, <span class="number">0</span>, MAXARG * MAXARG);</span><br><span class="line">  <span class="comment">// get input from argv</span></span><br><span class="line">  <span class="keyword">int</span> i, j, len;</span><br><span class="line">  <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; argc - <span class="number">1</span>; i++) &#123;</span><br><span class="line">    <span class="built_in">strcpy</span>(args[i], argv[i+<span class="number">1</span>]);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// get input from stdin</span></span><br><span class="line">  j = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> ((len = read(<span class="number">0</span>, &amp;args[i][j], <span class="keyword">sizeof</span>(<span class="keyword">char</span>))) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (args[i][j] == <span class="string">&#x27;\n&#x27;</span>) &#123;</span><br><span class="line">      args[i][j] = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">      <span class="comment">// ready to execute the command</span></span><br><span class="line">      <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; MAXARG - <span class="number">1</span>; i++) &#123;</span><br><span class="line">        p[i] = &amp;args[i][<span class="number">0</span>];</span><br><span class="line">      &#125;</span><br><span class="line">      p[MAXARG - <span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">      <span class="comment">// execute the command</span></span><br><span class="line">      <span class="keyword">if</span> (fork() == <span class="number">0</span>) &#123;</span><br><span class="line">        exec(p[<span class="number">0</span>], p);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        wait();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// reset parameters</span></span><br><span class="line">      i = argc - <span class="number">1</span>;</span><br><span class="line">      j = <span class="number">0</span>;</span><br><span class="line">      <span class="built_in">memset</span>(args[i], <span class="number">0</span>, (MAXARG - i) * MAXARG);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (args[i][j] == <span class="string">&#x27; &#x27;</span>) &#123;</span><br><span class="line">      args[i][j] = <span class="string">&#x27;\0&#x27;</span>;</span><br><span class="line">      i++;</span><br><span class="line">      j = <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">if</span> (i == MAXARG) &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="number">2</span>, <span class="string">&quot;Too many arguments, please make sure &lt; 32\n&quot;</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> j++;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">exit</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>Hanlin Ke
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://www.vincentko.xyz/%E3%80%90%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E3%80%91MIT-6-828-6-S081-2019-Lab1/" title="【操作系统】MIT 6.828&#x2F;6.S081 2019 Lab1">https://www.vincentko.xyz/【操作系统】MIT-6-828-6-S081-2019-Lab1/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/OS/" rel="tag"># OS</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91IASO/" rel="prev" title="【论文笔记】IASO">
+                  <i class="fa fa-chevron-left"></i> 【论文笔记】IASO
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hanlin Ke</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

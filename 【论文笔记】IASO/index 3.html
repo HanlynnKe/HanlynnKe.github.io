@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.vincentko.xyz","root":"/","scheme":"Pisces","version":"8.0.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}};
+  </script>
+
+  <meta name="description" content="今天向大家介绍的是由芝加哥大学教授Haryadi S. Gunawi团队与Nutanix公司一同撰写的检测并缓解分布式系统中硬件Fail-slow故障的文章：IASO: a fail-slow detection and mitigation framework for distributed storage services">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【论文笔记】IASO">
+<meta property="og:url" content="https://www.vincentko.xyz/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91IASO/index.html">
+<meta property="og:site_name" content="Hanlin Ke">
+<meta property="og:description" content="今天向大家介绍的是由芝加哥大学教授Haryadi S. Gunawi团队与Nutanix公司一同撰写的检测并缓解分布式系统中硬件Fail-slow故障的文章：IASO: a fail-slow detection and mitigation framework for distributed storage services">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gig5yubdcaj31hc0u0ta5.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gig6hmpysdj31hc0u075m.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gig6mapmlkj31hc0u0q4i.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gig6v360koj31hc0u0ab8.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gig73vs2kij31hc0u0mz5.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gig8472pyej31hc0u0acd.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gig891rw9cj31hc0u0ju3.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gig90x778sj31hc0u0myp.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gig93uw0b3j31hc0u0q42.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxgkk1xmj31hc0u0tbj.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxhvqvcwj31hc0u0jtx.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxmc0buuj31hc0u076r.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxpq4e44j31hc0u00vh.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxvsgbcgj31hc0u00v2.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigy67r5aej31hc0u0tbq.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigyh5cp4xj31hc0u0di1.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigynu7r7kj31hc0u0my1.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigyq9bm81j31hc0u0wgn.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigyqkxuzfj31hc0u00w8.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigyqn2411j31hc0u0ju2.jpg">
+<meta property="og:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gigyqqakxej31hc0u0jtb.jpg">
+<meta property="article:published_time" content="2020-09-05T14:44:21.000Z">
+<meta property="article:modified_time" content="2022-04-10T18:00:53.949Z">
+<meta property="article:author" content="Hanlin Ke">
+<meta property="article:tag" content="paper presentations">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://tva1.sinaimg.cn/large/007S8ZIlly1gig5yubdcaj31hc0u0ta5.jpg">
+
+
+<link rel="canonical" href="https://www.vincentko.xyz/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91IASO/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>【论文笔记】IASO | Hanlin Ke</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">Hanlin Ke</h1>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">Vincent的记事簿</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%A1%86%E6%9E%B6"><span class="nav-number">1.</span> <span class="nav-text">1 框架</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E5%8A%A8%E6%9C%BA"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 动机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E8%AE%BE%E8%AE%A1%E5%87%86%E5%88%99"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 设计准则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E9%98%B6%E6%AE%B5"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 阶段</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-1-%E6%A3%80%E6%B5%8B%E9%98%B6%E6%AE%B5"><span class="nav-number">1.3.1.</span> <span class="nav-text">1.3.1 检测阶段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-2-%E7%BC%93%E5%92%8C%E9%98%B6%E6%AE%B5"><span class="nav-number">1.3.2.</span> <span class="nav-text">1.3.2 缓和阶段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-3-3-%E8%A7%A3%E5%86%B3%E9%98%B6%E6%AE%B5"><span class="nav-number">1.3.3.</span> <span class="nav-text">1.3.3 解决阶段</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">1.4.</span> <span class="nav-text">1.4 实验结果</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-1-%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%B0%9D%E8%AF%95"><span class="nav-number">1.4.1.</span> <span class="nav-text">1.4.1 失败的尝试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-2-%E6%88%90%E5%8A%9F%E7%9A%84%E7%BB%93%E6%9E%9C"><span class="nav-number">1.4.2.</span> <span class="nav-text">1.4.2 成功的结果</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-4-3-%E7%9C%9F%E5%81%87%E6%95%85%E9%9A%9C"><span class="nav-number">1.4.3.</span> <span class="nav-text">1.4.3 真假故障</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">2.</span> <span class="nav-text">2 数据集</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E6%95%B0%E6%8D%AE%E8%A7%84%E6%A8%A1"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 数据规模</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%9C%89%E5%85%B3%E5%8F%91%E7%8E%B0"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 有关发现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-1-%E6%A0%B9%E6%9C%AC%E5%8E%9F%E5%9B%A0"><span class="nav-number">2.2.1.</span> <span class="nav-text">2.2.1 根本原因</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-2-%E6%A0%B9%E6%9C%AC%E5%AD%90%E5%8E%9F%E5%9B%A0"><span class="nav-number">2.2.2.</span> <span class="nav-text">2.2.2 根本子原因</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-3-%E5%AD%98%E6%B4%BB%E6%97%B6%E9%97%B4%E4%B8%8E%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.2.3.</span> <span class="nav-text">2.2.3 存活时间与模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-2-4-%E5%A4%84%E7%90%86%E8%80%97%E6%97%B6"><span class="nav-number">2.2.4.</span> <span class="nav-text">2.2.4 处理耗时</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93"><span class="nav-number">2.3.</span> <span class="nav-text">3 个人总结</span></a></li></ol></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Hanlin Ke"
+      src="https://tva1.sinaimg.cn/large/0081Kckwly1gm3f4z698kj31400u0778.jpg">
+  <p class="site-author-name" itemprop="name">Hanlin Ke</p>
+  <div class="site-description" itemprop="description">Vincent Hanlin Ke</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/HanlynnKe" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;HanlynnKe" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.linkedin.com/in/hanlynnke/" title="LinkedIn → https:&#x2F;&#x2F;www.linkedin.com&#x2F;in&#x2F;hanlynnke&#x2F;" rel="noopener" target="_blank"><i class="fab fa-linkedin fa-fw"></i>LinkedIn</a>
+      </span>
+  </div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://www.vincentko.xyz/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91IASO/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://tva1.sinaimg.cn/large/0081Kckwly1gm3f4z698kj31400u0778.jpg">
+      <meta itemprop="name" content="Hanlin Ke">
+      <meta itemprop="description" content="Vincent Hanlin Ke">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hanlin Ke">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【论文笔记】IASO
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2020-09-05 22:44:21" itemprop="dateCreated datePublished" datetime="2020-09-05T22:44:21+08:00">2020-09-05</time>
+    </span>
+      <span class="post-meta-item">
+        <span class="post-meta-item-icon">
+          <i class="far fa-calendar-check"></i>
+        </span>
+        <span class="post-meta-item-text">Edited on</span>
+        <time title="Modified: 2022-04-11 02:00:53" itemprop="dateModified" datetime="2022-04-11T02:00:53+08:00">2022-04-11</time>
+      </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Papers/" itemprop="url" rel="index"><span itemprop="name">Papers</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>今天向大家介绍的是由芝加哥大学教授Haryadi S. Gunawi团队与Nutanix公司一同撰写的检测并缓解分布式系统中硬件Fail-slow故障的文章：<em>IASO: a fail-slow detection and mitigation framework for distributed storage services</em></p>
+<a id="more"></a>
+
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gig5yubdcaj31hc0u0ta5.jpg" alt="PPT-0"></p>
+<p>这篇文章是Gunawi教授在上一篇提出Fail-slow故障的基础上所提出的一个检测Fail-slow故障并缓解故障带来的影响的框架。 并且团队在实验过程中收集整理并公开发表一个目前最全的Fail-slow故障数据集。下面我将分别介绍这两个创新点。</p>
+<h2 id="1-框架"><a href="#1-框架" class="headerlink" title="1 框架"></a>1 框架</h2><p>在框架这一部分，我将从以下4个部分介绍：设计并实现框架的动机、框架的设计准则、框架中的阶段以及实验结果。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gig6hmpysdj31hc0u075m.jpg" alt="PPT-1"></p>
+<h3 id="1-1-动机"><a href="#1-1-动机" class="headerlink" title="1.1 动机"></a>1.1 动机</h3><p>目前生产环境中的许多分布式系统的设计仍然基于无故障和fail-stop故障双模型实现。这些分布式系统通常无法容忍（tolerate）新引入的模型：fail-slow故障。无法解决fail-slow故障的分布式系统在出现故障的时候出现延迟尖峰或者吞吐量下降的问题，更严重些甚至能够引发整个集群的瘫痪，让系统所提供的服务中断数个小时（有时候甚至数天）。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gig6mapmlkj31hc0u0q4i.jpg" alt="PPT-2"></p>
+<h3 id="1-2-设计准则"><a href="#1-2-设计准则" class="headerlink" title="1.2 设计准则"></a>1.2 设计准则</h3><p>团队在设计IASO这个框架的时候，提出了4条设计准则：<strong>Non intrusive</strong> 非侵⼊性（使用已部署服务已收集的原始指标）、<strong>Peer based</strong> 基于对等服务（监视服务级别的请求，而不是操作系统或硬件级别的请求）、<strong>Load aware</strong> 负载感知（⼀个集群可以具有不同的机器容量和不同的负载，必须根据节点的容量对节点的性能进⾏归⼀化）、<strong>Stable and accurate</strong> 稳定而准确（有⼀个稳定⽽准确的算法，不会轻易误判导致性能下降）</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gig6v360koj31hc0u0ab8.jpg" alt="PPT-3"></p>
+<p>基于以上这4条准则，IASO框架的植入才不会消耗过多系统资源，影响系统性能，从而达到双管齐下的效果。</p>
+<h3 id="1-3-阶段"><a href="#1-3-阶段" class="headerlink" title="1.3 阶段"></a>1.3 阶段</h3><p>IASO框架总共划分为3个阶段：检测、缓和、解决。其中最重要的部分位于检测与缓和，解决阶段主要靠人工进行处理。</p>
+<h4 id="1-3-1-检测阶段"><a href="#1-3-1-检测阶段" class="headerlink" title="1.3.1 检测阶段"></a>1.3.1 检测阶段</h4><p>首先来看看<strong>IASO框架的示意图</strong>：</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gig73vs2kij31hc0u0mz5.jpg" alt="PPT-4"></p>
+<p>集群中的每个节点都运行着一个被称为控制器VM的特殊VM，它提供数据和控制服务。在示意图中，数据服务为Cassandra（CS），控制服务为ZooKeeper（ZK）。</p>
+<p>IASO利用每个服务都提供的超时计数来进行<strong>得分</strong>的计算（强调一下，本文中提到的所有使得服务器性能下降的故障都是指持续性的故障，间断的故障，如垃圾回收，不会对服务器性能造成太大影响）。</p>
+<p>每个节点都会维护一个 N * (N - 1) 大小的<strong>得分表</strong>，表示每个实例都能够观察其余 (N - 1) 个兄弟服务的性能，并进行统计上报。</p>
+<p>在节点中还会运行<strong>得分数据库</strong>，用来维护每个VM里面服务的得分变量及其历史值。不仅如此，得分数据库还能够根据上传来的数据运行一个异常点检测算法（DBSCAN 密度聚类算法），从算法结果中挑出最异常的服务隔离起来后再处理。</p>
+<p>检测阶段的运行流程很简单：计算得分 =&gt; 分析得分 =&gt; 得到异常点 =&gt; 处理</p>
+<p><strong>那么，IASO是怎么计算得分的呢？</strong>首先要先引入一些参数：每个*<strong>epoch**<em>为5秒；</em></strong>prev*<strong>表示上一个<em>epoch</em>的最新得分；**<em>score</em></strong>表示当前<em>epoch</em>的得分，由1到100表示性能由高到低；*<strong>ToResRatio**<em>表示超时响应比，即超时计数除以响应次数；</em></strong>ratioThresh*<strong>为超时响应比的阈值，设置为0.1，表示100次响应中有10次超时，团队在生产环境中的经验告诉他们0.1的阈值已经足以导致整个集群性能的下降了，设置太高系统反应太慢，设置太低系统会过于敏感而产生误判；**<em>minTTR</em></strong>为得分降低所需要的最少时间，设置为2分钟，即兄弟服务的响应需要保持0超时2分钟才能够开始下调对兄弟服务的得分。得分算法如下：</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gig8472pyej31hc0u0acd.jpg" alt="PPT-5"></p>
+<p>在节点不超时的情况下，节点得分会以“线性减少”的⽅式逐渐减⾄0；节点超时的情况下，节点得分以“乘法增加”的⽅式递增。</p>
+<p>其中，*<strong>minRatio*** 说明超时响应⽐过⼤会导致系统反应较慢，因⽽限定在10%已⾜够说明性能下降；*</strong>nearThresh*** 用于与阈值相⽐表示超时的严重程度。</p>
+<p>每个服务会收集一个窗口为10分钟的得分数据，得分数据库以这些数据中30%位置的得分表示当前得分并输入聚类算法，选出一个异常点进行下一步处理——缓和。</p>
+<h4 id="1-3-2-缓和阶段"><a href="#1-3-2-缓和阶段" class="headerlink" title="1.3.2 缓和阶段"></a>1.3.2 缓和阶段</h4><p>作者们提出3种方式来缓和fail-slow产生的影响：重启服务实例并移除对应租约（默认方法，适用于小集群）、关闭VM（适用于大集群）和关闭主机（适用于大集群）。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gig891rw9cj31hc0u0ju3.jpg" alt="PPT-6"></p>
+<p>对于第一个模式，<strong>重启服务实例并移除对应租约</strong>，作者们举了2个例子进行说明。在ZooKeeper场景下，如果重启的服务实例是中心节点，则ZooKeeper会选取新的节点，这样的话成本是在其他健康同伴节点上重建中心节点的开销。在Cassandra场景下，由于每个实例负责一个键的范围，因此有两种不同开销的方法：开销较大的方案是从环中删除该实例并触发整个集群的键范围重新平衡，这可能为时过早，因为该实例可能很快就会得到解决；开销较小的方法是慢速实例不再是所属键范围的主要所有者并用其他副本之一进行替代，这样的优点在于推迟整个集群重新平衡键范围的需求，但由于“丢失”一个服务实例，新添加的数据的容错能力将降低，并且读操作的吞吐量可能会降低。</p>
+<p>对于第二个模式，<strong>关闭VM</strong>，即把控制出现fail-slow的服务实例的VM关闭。这个操作同时会关闭VM上运行的其他服务，之后集群会自动运行恢复平衡的算法。</p>
+<p>对于第三个模式，<strong>关闭主机</strong>，系统关闭出现fail-slow故障的主机后会将原本运行在其上面的VM全部迁移到其他健康主机上。</p>
+<p>第二、三两种模式都适用于拥有大量机器的大集群，小集群不适合适用如此“激进”的缓和方法</p>
+<h4 id="1-3-3-解决阶段"><a href="#1-3-3-解决阶段" class="headerlink" title="1.3.3 解决阶段"></a>1.3.3 解决阶段</h4><p>解决阶段很简单，IASO框架将自动呼叫站点可靠性工程师，以识别出故障的组件并帮助支持人员进行修复，并使修复后的组件恢复运行。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gig90x778sj31hc0u0myp.jpg" alt="PPT-7"></p>
+<p>具体来说，当检测到故障转移缓慢的节点时，IASO会在客户监视UI上生成用户警报。 IASO还对站点可靠性工程师（SRE）进行寻呼，以便他们可以与受影响的客户一起解决问题。</p>
+<h3 id="1-4-实验结果"><a href="#1-4-实验结果" class="headerlink" title="1.4 实验结果"></a>1.4 实验结果</h3><p>在实验结果方面，团队也是做了详细的汇报，主要通过以下3个方面：</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gig93uw0b3j31hc0u0q42.jpg" alt="PPT-8"></p>
+<h4 id="1-4-1-失败的尝试"><a href="#1-4-1-失败的尝试" class="headerlink" title="1.4.1 失败的尝试"></a>1.4.1 失败的尝试</h4><p>在得出最后的计算公式之前，Gunawi教授带领的团队首先直接用超时计数作为得分，但作用于3个确实性能下降的实例样本后，得到的数据图表却让人很不满意：每次超时都是以突发的方式发生，但整个时间间隔内故障却十分严重。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxgkk1xmj31hc0u0tbj.jpg" alt="PPT-9"></p>
+<p>因此，他们得到一个结论：不保存给定时间段内每个peer的得分情况是无法检测到高分是短暂出现还是持续出现的。紧接着，他们利用超时计数，将得分设置为最近3分钟窗口内得分的中位数，得到的结果很理想，在故障严重的时间段内保持较高的分数，即左下的图表。再后来他们就得到了[上面](#1.3.1 检测阶段)所提到的得分计算公式。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxhvqvcwj31hc0u0jtx.jpg" alt="PPT-10"></p>
+<h4 id="1-4-2-成功的结果"><a href="#1-4-2-成功的结果" class="headerlink" title="1.4.2 成功的结果"></a>1.4.2 成功的结果</h4><p>利用[最终](#1.3.1 检测阶段)的计算公式，团队得到了理想的图表：出现故障的时候得分维持在高分。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxmc0buuj31hc0u076r.jpg" alt="PPT-11"></p>
+<p>有了正确的计算公式，就能够更好的说明[检测阶段](#1.3.1 检测阶段)部分最后一段话中“得分数据库以这些数据中30%位置的得分表示当前得分并输入聚类算法”含义：</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxpq4e44j31hc0u00vh.jpg" alt="PPT-12"></p>
+<p>如图，在39:37的时候节点3就已经出现超时问题了，但在当前窗口这10次记录中，30%的位置位于37:57，当时的节点尚未超时，因而在得分数据库看来节点3还没有超时，此时节点3的得分是1左右。在下一个窗口时，30%的位置位于39:37此时确实有90左右的高分，故得分数据库记录其得分为90并利用聚类算法筛选并标记出异常点，进入缓和的阶段。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigxvsgbcgj31hc0u00v2.jpg" alt="PPT-13"></p>
+<p>以上图为例，数据包丢失等fail-slow故障的出现大约在9:15发生，此后约15分钟内整个集群的性能下降至几乎为0，在9:18 - 9.26期间IASO框架检测出故障节点，并在9:26 - 9:30期间运行缓和策略使集群的性能恢复至原本的状态。这张图片反映出fail-slow不仅影响主机，还对主机所在的整个集群都有不容忽视的影响。此外，也能够侧面体现出IASO框架的可用性：将隔离性能下降节点的所需时间缩短至分钟级别的长度。</p>
+<h4 id="1-4-3-真假故障"><a href="#1-4-3-真假故障" class="headerlink" title="1.4.3 真假故障"></a>1.4.3 真假故障</h4><p>在二分类问题中有假阳性、假阴性的结果，在判别故障的时候也同样有相同的问题。图片中是作者们在实验中遇到的阳性（有故障）统计图。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigy67r5aej31hc0u0tbq.jpg" alt="PPT-14"></p>
+<p>可以看得出来，每个月都至少有10起以上真的fail-slow故障出现，同时，也有至少1起假阳性事件的发生。对于假阳性，作者们分为“确认是假阳性”和“可能是假阳性”两种分类。“确认”的假阳性节点自然是健康的节点被误判为慢节点，“可能”的假阳性节点是因为一些未知的原因出现的：比如SRE开始调试的时候发现问题消失了，所有硬件软件都运行正常。<strong>假阳性</strong>可能会导致集群暂时以较低的性能运行，但<strong>假阴性</strong>对于集群的影响是毁灭性的：可能会导致集群瘫痪，并且数小时都无法被检测到。</p>
+<h2 id="2-数据集"><a href="#2-数据集" class="headerlink" title="2 数据集"></a>2 数据集</h2><p>介绍完了框架，在数据集方面作者们也是下足了功夫：整个数据集包含232个有效案例，涉及39000个节点，整个时间跨度长达7个月。</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigyh5cp4xj31hc0u0di1.jpg" alt="PPT-15"></p>
+<h3 id="2-1-数据规模"><a href="#2-1-数据规模" class="headerlink" title="2.1 数据规模"></a>2.1 数据规模</h3><ul>
+<li>有效案例数目：232</li>
+<li>集群大小：3 - 56个节点/集群</li>
+<li>节点总数：39000</li>
+<li>控制器VM运行的服务：Cassandra和ZooKeeper</li>
+<li>数据类型：support ticket （可能是文本……具体文中也没有说明）</li>
+<li>数据组成：发现的根本原因的类别、解决问题的步骤、事件发⽣的时间、集群标识号、客户集群上的软件版本、受影响的节点的模型系列、事件发⽣时节点存活的月份数</li>
+</ul>
+<h3 id="2-2-有关发现"><a href="#2-2-有关发现" class="headerlink" title="2.2 有关发现"></a>2.2 有关发现</h3><p>在对数据进行统计分析时，作者们发现几乎每天都会出现fail-slow故障，这也从侧面说明fail-slow故障是难以预料的。除此之外，作者们又仔细调查了根本原因、根本原因的子原因、存活时间、模型、处理耗时这几个方面的数据：</p>
+<p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigynu7r7kj31hc0u0my1.jpg" alt="PPT-16"></p>
+<h4 id="2-2-1-根本原因"><a href="#2-2-1-根本原因" class="headerlink" title="2.2.1 根本原因"></a>2.2.1 根本原因</h4><p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigyq9bm81j31hc0u0wgn.jpg" alt="PPT-17"></p>
+<p>从图中可以看出，硬件和⽹络故障是导致fail-slow事件的最⼤原因。它们的总数与fail-stop情况下的总数⼤致相同。不可忽视的是，未知故障由于种种原因在故障占⽐中占了很⼤⼀部分。这可能是因为：</p>
+<ol>
+<li><p>客户在⽣成fail-slow警报时未注意到任何问题（从⽽导致误报），或者是⾃⼰解决了问题；</p>
+</li>
+<li><p>SRE找不到导致该问题的特定根本原因或没有为⽀持案例添加明确的原因。</p>
+</li>
+</ol>
+<h4 id="2-2-2-根本子原因"><a href="#2-2-2-根本子原因" class="headerlink" title="2.2.2 根本子原因"></a>2.2.2 根本子原因</h4><p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigyqkxuzfj31hc0u00w8.jpg" alt="PPT-18"></p>
+<p>在对根本原因进行更加深入的发掘时，团队们发现在某个造成fail-slow故障的根本原因的类别下有更多的子原因，并且子原因之间差异很大。除此之外，他们还发现不同的故障类型在服务层面上可以转换为fail-slow，如fail-stop、fail-transient、fail-partial等。</p>
+<h4 id="2-2-3-存活时间与模型"><a href="#2-2-3-存活时间与模型" class="headerlink" title="2.2.3 存活时间与模型"></a>2.2.3 存活时间与模型</h4><p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigyqn2411j31hc0u0ju2.jpg" alt="PPT-19"></p>
+<p>从图中倒是能够挺容易的发现存活时间越长的机器出现问题的次数较少。个人认为存活时间短的往往是那些出现问题多的被早早隔离重置的节点。在模型方面，作者们发现所有的模型都会面临同样的问题，没有什么特点或者规律。</p>
+<h4 id="2-2-4-处理耗时"><a href="#2-2-4-处理耗时" class="headerlink" title="2.2.4 处理耗时"></a>2.2.4 处理耗时</h4><p><img src="https://tva1.sinaimg.cn/large/007S8ZIlly1gigyqqakxej31hc0u0jtb.jpg" alt="PPT-20"></p>
+<p>这里的TTR是Time to resolve的意思，表示解决完毕一个ticket（故障事件）的时间，不同于IASO缓解故障的耗时。可以发现大部分故障都需要数小时数天的时间，极端的甚至超过一个月……因此，在性能问题影响到整个集群之前，需要赶紧隔离掉fail-slow组件。</p>
+<h3 id="3-个人总结"><a href="#3-个人总结" class="headerlink" title="3 个人总结"></a>3 个人总结</h3><p>3个突出的特点：提出了一个新的模型和一个大数据集，并且提供了支持材料。</p>
+<p>3个略微遗憾的特点：文中有一处拼写错误，数据集中没有最近收集到的数据，资源无法直接访问（需要解码tinyurl）</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>Hanlin Ke
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://www.vincentko.xyz/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91IASO/" title="【论文笔记】IASO">https://www.vincentko.xyz/【论文笔记】IASO/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/paper-presentations/" rel="tag"># paper presentations</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/%E3%80%90%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0%E3%80%91Fail-Slow-at-Scale/" rel="prev" title="【论文笔记】Fail-Slow at Scale">
+                  <i class="fa fa-chevron-left"></i> 【论文笔记】Fail-Slow at Scale
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/%E3%80%90%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E3%80%91MIT-6-828-6-S081-2019-Lab1/" rel="next" title="【操作系统】MIT 6.828/6.S081 2019 Lab1">
+                  【操作系统】MIT 6.828/6.S081 2019 Lab1 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Hanlin Ke</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/pisces/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
